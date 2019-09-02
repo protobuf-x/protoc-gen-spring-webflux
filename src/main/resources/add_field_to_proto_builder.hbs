@@ -1,0 +1,25 @@
+if ({{name}} != null) {
+{{#if isList}}
+    {{#if isMap}}
+        builder.putAll{{capProtoName}}({{name}}
+            {{# if isMapMsg}}
+            .entrySet().stream()
+                .collect(Collectors.toMap(
+                    entry -> entry.getKey(),
+                    entry -> entry.getValue().toProto()))
+            {{/if}}
+        );
+    {{else}}
+        builder.addAll{{capProtoName}}({{name}}
+            {{#if isMsg}}
+                .stream()
+                .map(item -> item.toProto())
+                .collect(Collectors.toList())
+            {{/if}}
+        );
+    {{/if}}
+{{else}}
+    builder.set{{capProtoName}}({{name}}{{#if isMsg}}.toProto(){{/if}});
+{{/if}}
+}
+

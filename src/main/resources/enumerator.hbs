@@ -1,0 +1,24 @@
+public enum {{enumName}} {
+    {{#values}}
+    {{name}}({{value}}),
+    {{/values}}
+    ;
+
+    private final int value;
+    private {{enumName}}(int value) {
+            this.value = value;
+    }
+    public int getValue() {
+            return value;
+    }
+    public {{originalProtoType}} toProto() {
+            return {{originalProtoType}}.forNumber(this.value);
+    }
+    public static {{enumName}} fromProto({{originalProtoType}} input) {
+            for ({{enumName}} val : {{enumName}}.values()) {
+                if (val.value == input.getNumber()) { return val; }
+        }
+        throw new IllegalStateException("No matching enum for " + input + " in " + {{enumName}}.values());
+    }
+}
+

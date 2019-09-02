@@ -1,0 +1,42 @@
+{{msgName}}.{{fieldName}} =
+{{#if isList}}
+    {{#if isMap}}
+        input.get{{capProtoName}}Map()
+            {{#if isMapMsg}}
+                .entrySet().stream().collect(
+                    Collectors.toMap(
+                        entry -> entry.getKey(),
+                        entry -> {{mapValType}}.fromProto(entry.getValue())))
+            {{/if}}
+        ;
+    {{else}}
+        input.get{{capProtoName}}List()
+            {{#if isMsg}}
+                .stream()
+                    .map(item -> {{msgType}}.fromProto(item))
+                    ".collect(Collectors.toList())"+
+            {{/if}}
+        ;
+    {{/if}}
+{{else if isOneOf}}
+    input.get{{oneOfName}}Case().getNumber() != {{fieldNumber}} ?
+        null :
+        {{#if isMsg}}
+            {{msgType}}.fromProto(input.get{{capProtoName}}());
+        {{else}}
+            input.get{{capProtoName}}();
+        {{/if}}
+{{else if isProto3}}
+    {{#if isMsg}}
+        {{msgType}}.fromProto(input.get{{capProtoName}}());
+    {{else}}
+        input.get{{capProtoName}}();
+    {{/if}}
+{{else}}
+    !input.has{{capProtoName}}() ? null :
+        {{#if isMsg}}
+            {{msgType}}.fromProto(input.get{{capProtoName}}());
+        {{else}}
+            input.get{{capProtoName}}();
+        {{/if}}
+{{/if}}

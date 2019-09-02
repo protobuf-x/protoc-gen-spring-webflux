@@ -1,0 +1,15 @@
+public static class {{className}} {
+    private {{className}}() {}
+    {{#nestedDefinitions}}{{.}}{{/nestedDefinitions}}
+    {{#fieldDeclarations}}{{.}}{{/fieldDeclarations}}
+    public {{originalProtoType}} toProto() {
+        {{originalProtoType}}.Builder builder = {{originalProtoType}}.newBuilder();
+        {{#setBuilderFields}}{{.}}{{/setBuilderFields}}
+        return builder.build();
+    }
+    public static {{className}} fromProto({{originalProtoType}} input) {
+        {{className}} newMsg = new {{className}}();
+        {{#setMsgFields}}{{.}}{{/setMsgFields}}
+        return newMsg;
+    }
+}

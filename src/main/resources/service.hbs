@@ -1,0 +1,39 @@
+public static class {{serviceName}}Handler {
+
+    {{package}}.{{serviceName}}Grpc.{{serviceName}}BlockingStub stub;
+
+    public {{serviceName}}Handler() {
+        ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 6565)
+                .usePlaintext()
+                .build();
+        this.stub = {{package}}.{{serviceName}}Grpc.newBlockingStub(channel);
+    }
+
+    public Mono<ServerResponse> handleAll(ServerRequest serverRequest) {
+        switch (serverRequest.path()) {
+            {{#methods}}
+            case "/{{package}}.{{serviceName}}/{{methodProto}}":
+                return {{methodName}}(serverRequest);
+            {{/methods}}
+        }
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+    }
+
+    {{#methods}}
+    public Mono<ServerResponse> {{methodName}}(ServerRequest serverRequest) {
+        return serverRequest.bodyToMono(String.class)
+                .flatMap(json -> {
+                    try {
+                        {{requestProto}}.Builder builder = {{requestProto}}.newBuilder();
+                        JsonFormat.parser().merge(json, builder);
+                        {{resultProto}} res = stub.{{methodName}}(builder.build());
+                        return ServerResponse.ok()
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .syncBody(JsonFormat.printer().print(res));
+                    } catch (InvalidProtocolBufferException e) {
+                        throw Exceptions.propagate(e);
+                    }
+                });
+    }
+    {{/methods}}
+}
