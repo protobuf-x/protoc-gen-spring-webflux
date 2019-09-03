@@ -9,7 +9,7 @@ public static class {{serviceName}}Handler {
     public Mono<ServerResponse> handleAll(ServerRequest serverRequest) {
         switch (serverRequest.path()) {
             {{#methods}}
-            case "/{{package}}.{{serviceName}}/{{methodProto}}":
+            case "/{{packageProto}}.{{serviceName}}/{{methodProto}}":
                 return {{methodName}}(serverRequest);
             {{/methods}}
         }

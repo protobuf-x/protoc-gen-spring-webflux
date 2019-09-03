@@ -67,11 +67,11 @@ class Generator extends ProtocPluginCodeGenerator {
     @SneakyThrows // TODO
     protected Optional<String> generateServiceCode(@Nonnull final ServiceDescriptor serviceDescriptor) {
         final String responseWrapper = serviceDescriptor.getName() + "Response";
-
         HashMap<String, Object> context = new HashMap<>();
         context.put("serviceName", serviceDescriptor.getName());
         context.put("responseWrapper", responseWrapper);
         context.put("package", serviceDescriptor.getJavaPkgName());
+        context.put("packageProto", serviceDescriptor.getProtoPkgName());
         context.put("methods", serviceDescriptor.getMethodDescriptors().stream()
                 .map(this::methodContext)
                 .collect(Collectors.toList()));
