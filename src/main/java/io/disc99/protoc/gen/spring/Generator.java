@@ -20,7 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 
 /**
  * An implementation of {@link ProtocPluginCodeGenerator} that generates Spring Framework-compatible
- * REST controllers and swagger-annotated POJOs for gRPC services.
+ * WebFlux handlers and swagger-annotated POJOs for gRPC services.
  */
 @Slf4j
 class Generator extends ProtocPluginCodeGenerator {

@@ -11,25 +11,20 @@ repositories {
 sourceCompatibility = JavaVersion.VERSION_1_8
 
 dependencies {
-    compile "com.google.protobuf:protobuf-java:3.6.1"
-    compile "com.google.protobuf:protobuf-java-util:3.6.1"
-    compile "io.grpc:grpc-protobuf:1.19.0"
-    compile "io.grpc:grpc-stub:1.19.0"
-    compile 'com.github.jknack:handlebars:4.1.2'
+    implementation 'com.google.protobuf:protobuf-java:3.6.1'
+    implementation 'com.google.protobuf:protobuf-java-util:3.6.1'
+    implementation 'io.grpc:grpc-protobuf:1.19.0'
+    implementation 'io.grpc:grpc-stub:1.19.0'
+    implementation 'com.github.jknack:handlebars:4.1.2'
+    implementation 'org.apache.commons:commons-lang3:3.9'
+    implementation 'com.google.googlejavaformat:google-java-format:1.7'
 
-    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
-    compile group: 'org.antlr', name: 'ST4', version: '4.1'
-    compile group: 'com.google.googlejavaformat', name: 'google-java-format', version: '1.7'
+    annotationProcessor 'org.projectlombok:lombok:1.18.8'
+    implementation 'org.projectlombok:lombok:1.18.8'
 
-//    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.28'
-//    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
-
-    annotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.8'
-    implementation group: 'org.projectlombok', name: 'lombok', version: '1.18.8'
-
-    testRuntime("org.junit.platform:junit-platform-launcher:1.4.2")
-    testRuntime("org.junit.jupiter:junit-jupiter-engine:5.4.2")
-    testRuntime("org.junit.vintage:junit-vintage-engine:5.4.2")
+    testRuntime 'org.junit.platform:junit-platform-launcher:1.4.2'
+    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
+    testRuntime 'org.junit.vintage:junit-vintage-engine:5.4.2'
 }
 
 // Define the main class for the application

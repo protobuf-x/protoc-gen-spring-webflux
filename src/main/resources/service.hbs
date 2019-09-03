@@ -2,11 +2,8 @@ public static class {{serviceName}}Handler {
 
     {{package}}.{{serviceName}}Grpc.{{serviceName}}BlockingStub stub;
 
-    public {{serviceName}}Handler() {
-        ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 6565)
-                .usePlaintext()
-                .build();
-        this.stub = {{package}}.{{serviceName}}Grpc.newBlockingStub(channel);
+    public {{serviceName}}Handler({{package}}.{{serviceName}}Grpc.{{serviceName}}BlockingStub stub) {
+        this.stub = stub;
     }
 
     public Mono<ServerResponse> handleAll(ServerRequest serverRequest) {
