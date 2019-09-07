@@ -315,7 +315,8 @@ public class MethodGenerator {
             context.put("methodType", springMethodType.getType());
             context.put("serviceName", serviceDescriptor.getName());
             context.put("isRest", parameters.hasParameter("style")
-                    && parameters.getParameterValue("style").equals("rest"));
+                    && parameters.getParameterValue("style").equals("rest")
+                    && serviceMethodDescriptor.getHttpRule().isPresent());
             // Defaults.
             context.put(IS_REQUEST_JSON, true);
 //            context.put(REQUEST_ARGS_NAME, "@RequestBody " + requestBodyType + " inputDto");
