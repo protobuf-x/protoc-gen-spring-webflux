@@ -158,18 +158,18 @@ class FileDescriptorProcessingContext {
         context.put("protoSourceName", fileDescriptorProto.getName());
         context.put("pkgName", javaPkg);
         context.put("outerClassName", outerClass.getPluginJavaClass());
-//        context.put("messageCode", fileDescriptorProto.getMessageTypeList().stream()
-//                        .map(message -> registry.getMessageDescriptor(message.getName()))
-//                        .map(generator::generateCode)
-//                        .filter(Optional::isPresent)
-//                        .map(Optional::get)
-//                        .collect(Collectors.toList()));
-//        context.put("enumCode", fileDescriptorProto.getEnumTypeList().stream()
-//                        .map(message -> registry.getMessageDescriptor(message.getName()))
-//                        .map(generator::generateCode)
-//                        .filter(Optional::isPresent)
-//                        .map(Optional::get)
-//                        .collect(Collectors.toList()));
+        context.put("messageCode", fileDescriptorProto.getMessageTypeList().stream()
+                        .map(message -> registry.getMessageDescriptor(message.getName()))
+                        .map(generator::generateCode)
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .collect(Collectors.toList()));
+        context.put("enumCode", fileDescriptorProto.getEnumTypeList().stream()
+                        .map(message -> registry.getMessageDescriptor(message.getName()))
+                        .map(generator::generateCode)
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .collect(Collectors.toList()));
         context.put("serviceCode", fileDescriptorProto.getServiceList().stream()
                         .map(message -> registry.getMessageDescriptor(message.getName()))
                         .map(generator::generateCode)

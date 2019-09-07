@@ -14,7 +14,7 @@
             {{#if isMsg}}
                 .stream()
                     .map(item -> {{msgType}}.fromProto(item))
-                    ".collect(Collectors.toList())"+
+                .collect(Collectors.toList())
             {{/if}}
         ;
     {{/if}}

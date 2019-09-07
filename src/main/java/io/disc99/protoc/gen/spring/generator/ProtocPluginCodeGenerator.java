@@ -15,6 +15,9 @@ import javax.annotation.Nonnull;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -35,6 +38,11 @@ public abstract class ProtocPluginCodeGenerator {
      * Stores information about processed messages.
      */
     private final Registry registry = new Registry();
+
+    /**
+     * Stores build parameters.
+     */
+    protected final Parameters parameters = new Parameters();
 
     /**
      * This method should return the name of the plugin.
@@ -152,6 +160,8 @@ public abstract class ProtocPluginCodeGenerator {
 
         final CodeGeneratorRequest req =
                 CodeGeneratorRequest.parseFrom(new BufferedInputStream(System.in), extensionRegistry);
+        parameters.add(req.getParameter());
+
         // The request presents the proto file descriptors in topological order
         // w.r.t. dependencies - i.e. the dependencies appear before the dependents.
         // This means we can process one file at a time without a separate linking step,

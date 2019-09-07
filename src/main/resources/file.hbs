@@ -8,5 +8,7 @@ package {{pkgName}};
         value = "by {{pluginName}} compiler plugin",
         comments = "Source: {{protoSourceName}}")
 public class {{outerClassName}} {
+    {{#messageCode}}{{.}}{{/messageCode}}
+    {{#enumCode}}{{.}}{{/enumCode}}
     {{#serviceCode}}{{.}}{{/serviceCode}}
 }
