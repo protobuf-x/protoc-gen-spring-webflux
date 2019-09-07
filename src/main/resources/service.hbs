@@ -7,30 +7,21 @@ public static class {{serviceName}}Handler {
     }
 
     public Mono<ServerResponse> handleAll(ServerRequest serverRequest) {
-        switch (serverRequest.path()) {
-            {{#methods}}
-            case "/{{packageProto}}.{{serviceName}}/{{methodProto}}":
-                return {{methodName}}(serverRequest);
-            {{/methods}}
-        }
+
+        {{#methods}}
+            {{#if isRest}}
+                if (RequestPredicates.method({{methodType}}).and(RequestPredicates.path("{{path}}")).test(serverRequest)) {
+                    return {{restMethodName}}(serverRequest);
+                }
+            {{else}}
+                if (RequestPredicates.method(HttpMethod.POST).and(RequestPredicates.path("/{{packageProto}}.{{serviceName}}/{{methodProto}}")).test(serverRequest)) {
+                    return {{restMethodName}}(serverRequest);
+                }
+            {{/if}}
+        {{/methods}}
+
         throw new ResponseStatusException(HttpStatus.NOT_FOUND);
     }
 
-    {{#methods}}
-    public Mono<ServerResponse> {{methodName}}(ServerRequest serverRequest) {
-        return serverRequest.bodyToMono(String.class)
-                .flatMap(json -> {
-                    try {
-                        {{requestProto}}.Builder builder = {{requestProto}}.newBuilder();
-                        JsonFormat.parser().merge(json, builder);
-                        {{resultProto}} res = stub.{{methodName}}(builder.build());
-                        return ServerResponse.ok()
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .syncBody(JsonFormat.printer().print(res));
-                    } catch (InvalidProtocolBufferException e) {
-                        throw Exceptions.propagate(e);
-                    }
-                });
-    }
-    {{/methods}}
+    {{#methodDefinitions}}{{.}}{{/methodDefinitions}}
 }
