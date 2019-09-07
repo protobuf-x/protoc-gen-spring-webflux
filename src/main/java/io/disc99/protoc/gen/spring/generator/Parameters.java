@@ -20,7 +20,7 @@ public class Parameters {
                 });
     }
 
-    public boolean hasParamater(String parameter) {
+    public boolean hasParameter(String parameter) {
         return parameters.containsKey(parameter);
     }
 
