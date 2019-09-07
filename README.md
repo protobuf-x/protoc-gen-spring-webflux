@@ -30,7 +30,7 @@ service EchoService {
 ```
 2. (Optional) Add a [`google.api.http`](https://github.com/googleapis/googleapis/blob/master/google/api/http.proto#L46) annotation to your .proto file for REST style API.
 
-```protoc:example.proto
+```diff
 syntax = "proto3";
 
 package example.demo;
@@ -42,22 +42,22 @@ package example.demo;
 
 service EchoService {
 
-    -rpc GetEcho(EchoRequest) returns (EchoResponse) {}
-    +rpc GetEcho(EchoRequest) returns (EchoResponse) {
-    +    // If you use REST API style
-    +    option (google.api.http) = {
-    +        get: "/echo/{echo}"
-    +    };
-    +}
+-    rpc GetEcho(EchoRequest) returns (EchoResponse) {}
++    rpc GetEcho(EchoRequest) returns (EchoResponse) {
++        // If you use REST API style
++        option (google.api.http) = {
++            get: "/echo/{echo}"
++        };
++    }
 
-    -rpc CreateEcho(CreateEchoRequest) returns (CreateEchoResponse) {
-    +rpc CreateEcho(CreateEchoRequest) returns (CreateEchoResponse) {
-    +    // If you use REST API style
-    +    option (google.api.http) = {
-    +          post: "/echo"
-    +          body: "*"
-    +    };
-    +}
+-    rpc CreateEcho(CreateEchoRequest) returns (CreateEchoResponse) {
++    rpc CreateEcho(CreateEchoRequest) returns (CreateEchoResponse) {
++        // If you use REST API style
++        option (google.api.http) = {
++              post: "/echo"
++              body: "*"
++        };
++    }
 }
 ```
 
@@ -65,9 +65,9 @@ service EchoService {
 
 ```bash
 # When default configuration, provide RPC style API.
-# In case of RPC style, API of grpc-web format is provided.
-# ex. POST http://host/{package}.{service}/{method}
-protoc -I. 
+# In case of RPC style, API of grpc-web format(/{package}.{service}/{method}) is provided.
+# ex. POST http://hostname/example.demo.EchoService/GetEcho
+protoc -I. \
     --spring-webflux_out=. \
      example.proto
 
