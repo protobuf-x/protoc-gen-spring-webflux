@@ -3,7 +3,7 @@ gRPC to JSON proxy generator protoc plugin for Spring WebFlux.
 
 The protoc-gen-spring-webflux is a plugin of the Google protocol buffers compiler
 [protoc](https://github.com/protocolbuffers/protobuf).
-It reads protobuf service definitions and generates a Spring WebFlux routing which
+It reads protobuf service definitions and generates a Spring WebFlux routing handler class which
 translates RPC and RESTful HTTP API into gRPC.
 
 ## Installation
