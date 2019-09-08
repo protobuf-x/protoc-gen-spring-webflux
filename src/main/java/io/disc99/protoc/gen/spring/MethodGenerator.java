@@ -82,22 +82,6 @@ public class MethodGenerator {
         return allMethodsContexts;
     }
 
-    String routing(SpringMethodType methodType) {
-        String methodName = StringUtils.uncapitalize(serviceMethodDescriptor.getName());
-
-        return new StringBuilder()
-                .append("if (serverRequest.methodName().equals(")
-                .append(methodType.getType())
-                .append(") && serverRequest.path().equals(")
-                .append("/" + serviceDescriptor.getName() + "/" + StringUtils.uncapitalize(serviceMethodDescriptor.getName()))
-                .append(")) {")
-                .append("return ")
-//                .append(context.get("restMethodName"))
-                .append("(serverRequest);")
-                .append("}")
-                .toString();
-    }
-
     @Nonnull
     private MethodTemplate generateMethodFromHttpRule(@Nonnull final HttpRule httpRule,
                                               @Nonnull final Optional<Integer> bindingIndex) {
@@ -143,10 +127,7 @@ public class MethodGenerator {
     private String generateVariableSetter(@Nonnull final String path,
                                           @Nonnull final FieldDescriptor field) {
         final StringBuilder setFieldBuilder = new StringBuilder();
-        setFieldBuilder.append("if (")
-                .append(variableForPath(path))
-                .append(" != null) {")
-                .append(" inputBuilder");
+        setFieldBuilder.append(" inputBuilder");
 
         final Deque<String> pathStack = new ArrayDeque<>(Arrays.asList(path.split("\\.")));
         while (pathStack.size() > 1) {
@@ -172,8 +153,7 @@ public class MethodGenerator {
             setFieldBuilder.append(");");
         }
 
-        setFieldBuilder.append("}");
-
+        setFieldBuilder.append("return inputBuilder;");
 
         return setFieldBuilder.toString();
     }
@@ -208,18 +188,21 @@ public class MethodGenerator {
         inputDescriptor.visitFields(fieldVisitor);
 
         String requestBody = "";
-        final List<String> requestArgs = new ArrayList<>();
+//        final List<String> requestArgs = new ArrayList<>();
         final List<String> requestToInputSteps = new ArrayList<>();
 
-        final String inputBuilderPrototype;
+//        final String inputBuilderPrototype;
         if (bodyPattern.isPresent()) {
             final String body = StringUtils.strip(bodyPattern.get());
             if (body.equals("*")) {
 //                requestArgs.add("@RequestBody " + getBodyType(true) + " inputDto");
-                requestBody = getBodyType(true) + " inputDto = serverRequest.bodyToMono(" + getBodyType(true) + ".class).block();";
-                inputBuilderPrototype = "inputDto.toProto()";
+//                requestBody = getBodyType(true) + " inputDto = serverRequest.bodyToMono(" + getBodyType(true) + ".class).block();";
+//                inputBuilderPrototype = "inputDto.toProto()";
+                requestToInputSteps.add(".flatMap(inputBuilder -> serverRequest.bodyToMono("
+                        + getBodyType(true)
+                        + ".class).map(inputDto -> inputBuilder.mergeFrom(inputDto.toProto())))");
             } else {
-                inputBuilderPrototype = "";
+//                inputBuilderPrototype = "";
                 if (body.contains(".")) {
                     throw new IllegalArgumentException("Invalid body: " + body + ". Body must refer to a top-level field.");
                 }
@@ -237,17 +220,33 @@ public class MethodGenerator {
                             ". Body must refer to a non-repeated/map field.");
                 }
 //                requestArgs.add("@RequestBody(required = " + bodyField.isRequired() + ") " + bodyField.getType() + " " + variableForPath(body));
-                requestBody = bodyField.getType() + " " + variableForPath(body) + " = serverRequest.bodyToMono(" + bodyField.getType() + ".class).block();";
+//                requestBody = bodyField.getType() + " " + variableForPath(body) + " = serverRequest.bodyToMono(" + bodyField.getType() + ".class).block();";
 
-                requestToInputSteps.add(generateVariableSetter(body, bodyField));
+//                requestToInputSteps.add(generateVariableSetter(body, bodyField));
+
+                requestToInputSteps.add(".flatMap(inputBuilder -> serverRequest.bodyToMono("
+                        + bodyField.getType()
+                        + ".class).filter(Objects::nonNull).map("
+                        + variableForPath(body)
+                        + " -> {"
+                        + generateVariableSetter(body, bodyField)
+                        + "}))");
             }
         } else {
-            inputBuilderPrototype = "";
+//            inputBuilderPrototype = "";
             // @RequestParam(name = <path>) <Type> <camelcasePath>
             fieldVisitor.getQueryParamFields().forEach((path, type) -> {
-                requestArgs.add(type.getType() + " " + variableForPath(path) + " = " + "serverRequest.queryParam(\"" + path + "\").map(p -> Arrays.asList(" + convertString("p", type.getTypeName()) + ")).orElse(null);");
 //                requestArgs.add("@RequestParam(name = \"" + path + "\", required = " + type.getProto().getLabel().equals(Label.LABEL_REQUIRED) + ") " + type.getType() + " " + variableForPath(path));
-                requestToInputSteps.add(generateVariableSetter(path, type));
+//                requestArgs.add(type.getType() + " " + variableForPath(path) + " = " + "serverRequest.queryParam(\"" + path + "\").map(p -> Arrays.asList(" + convertString("p", type.getTypeName()) + ")).orElse(null);");
+//                requestToInputSteps.add(generateVariableSetter(path, type));
+
+                requestToInputSteps.add(".flatMap(inputBuilder -> Mono.just(serverRequest.queryParam(\"" + path + "\").map(p -> Arrays.asList(" + convertString("p", type.getTypeName()) + ")).orElse(null))"
+                        + ".filter(Objects::nonNull).map("
+                        + variableForPath(path)
+                        + " -> {"
+                        + generateVariableSetter(path, type)
+                        + "}))");
+
             });
         }
 
@@ -257,23 +256,39 @@ public class MethodGenerator {
         // @PathVariable(name = <path>) <Type> <camelcasePath>
         fieldVisitor.getPathFields().forEach((path, type) -> {
 //            requestArgs.add("@PathVariable(name = \"" + path + "\") " + type.getType() + " " + variableForPath(path));
-            requestArgs.add(type.getType() + " " + variableForPath(path) + " = " + convertString("serverRequest.pathVariable(\"" + path + "\")", type.getType()) + ";");
-            requestToInputSteps.add(generateVariableSetter(path, type));
+//            requestArgs.add(type.getType() + " " + variableForPath(path) + " = " + convertString("serverRequest.pathVariable(\"" + path + "\")", type.getType()) + ";");
+//            requestToInputSteps.add(generateVariableSetter(path, type));
+
+            requestToInputSteps.add(".flatMap(inputBuilder -> Mono.just(" + convertString("serverRequest.pathVariable(\"" + path + "\")", type.getType()) + ")"
+                    + ".filter(Objects::nonNull).map("
+                    + variableForPath(path)
+                    + " -> {"
+                    + generateVariableSetter(path, type)
+                    + "}))");
+
         });
 
-        final StringBuilder requestToInput = new StringBuilder(inputDescriptor.getQualifiedOriginalName())
-                .append(".Builder inputBuilder = ")
+//        final StringBuilder requestToInput = new StringBuilder(inputDescriptor.getQualifiedOriginalName())
+//                .append(".Builder inputBuilder = ")
+//                .append(inputDescriptor.getQualifiedOriginalName())
+//                .append(".newBuilder(").append(inputBuilderPrototype).append(");");
+        final StringBuilder requestToInput = new StringBuilder()
+                .append("Mono.just(")
                 .append(inputDescriptor.getQualifiedOriginalName())
-                .append(".newBuilder(").append(inputBuilderPrototype).append(");");
+                .append(".newBuilder())");
 
         requestToInputSteps.forEach(requestToInput::append);
-        requestToInput.append("input = inputBuilder.build();");
+
+//        requestToInput.append("input = inputBuilder.build();");
+        requestToInput.append(".map(")
+                .append(inputDescriptor.getQualifiedOriginalName())
+                .append(".Builder::build)");
 
         return new MethodTemplate(methodType)
                 .setPath(template.getQueryPath())
                 .setIsRequestJson(bodyPattern.isPresent())
-                .setRequestBody(requestBody)
-                .setRequestArgs(String.join("\n", requestArgs))
+//                .setRequestBody(requestBody)
+//                .setRequestArgs(String.join("\n", requestArgs))
                 .setRequestToInput(requestToInput.toString())
                 .setRestMethodName(serviceMethodDescriptor.getName() +
                         bindingIndex.map(index -> Integer.toString(index)).orElse(""));
@@ -281,8 +296,8 @@ public class MethodGenerator {
 
     private class MethodTemplate {
 
-        private static final String REQUEST_ARGS_NAME = "requestArgs";
-        private static final String REQUEST_BODY_NAME = "requestBody";
+//        private static final String REQUEST_ARGS_NAME = "requestArgs";
+//        private static final String REQUEST_BODY_NAME = "requestBody";
         private static final String PREPARE_INPUT_NAME = "prepareInput";
         private static final String PATH_NAME = "path";
         private static final String REST_METHOD_NAME = "restMethodName";
@@ -320,7 +335,7 @@ public class MethodGenerator {
             // Defaults.
             context.put(IS_REQUEST_JSON, true);
 //            context.put(REQUEST_ARGS_NAME, "@RequestBody " + requestBodyType + " inputDto");
-            context.put(REQUEST_BODY_NAME, requestBodyType + " inputDto = serverRequest.bodyToMono(" + requestBodyType + ".class).block();");
+//            context.put(REQUEST_BODY_NAME, requestBodyType + " inputDto = serverRequest.bodyToMono(" + requestBodyType + ".class).block();");
             context.put(PATH_NAME, "/" + serviceDescriptor.getName() + "/" + StringUtils.uncapitalize(serviceMethodDescriptor.getName()));
             context.put(REST_METHOD_NAME, StringUtils.uncapitalize(serviceMethodDescriptor.getName()));
             final String defaultPrepareInput;
@@ -329,25 +344,26 @@ public class MethodGenerator {
 //                            ".map(dto -> dto.toProto())" +
 //                            ".collect(Collectors.toList());";
 //            } else {
-                defaultPrepareInput = "input = inputDto.toProto();";
+//                defaultPrepareInput = "input = inputDto.toProto();";
+                defaultPrepareInput = "serverRequest.bodyToMono(" + requestBodyType + ".class).map(" + requestBodyType + "::toProto)";
 //            }
 
             context.put(PREPARE_INPUT_NAME, defaultPrepareInput);
         }
 
-        @Nonnull
-        public MethodTemplate setRequestBody(@Nonnull final String requestBodyCode) {
-            this.context.remove(REQUEST_BODY_NAME);
-            this.context.put(REQUEST_BODY_NAME, requestBodyCode);
-            return this;
-        }
+//        @Nonnull
+//        public MethodTemplate setRequestBody(@Nonnull final String requestBodyCode) {
+//            this.context.remove(REQUEST_BODY_NAME);
+//            this.context.put(REQUEST_BODY_NAME, requestBodyCode);
+//            return this;
+//        }
 
-        @Nonnull
-        public MethodTemplate setRequestArgs(@Nonnull final String requestArgsCode) {
-            this.context.remove(REQUEST_ARGS_NAME);
-            this.context.put(REQUEST_ARGS_NAME, requestArgsCode);
-            return this;
-        }
+//        @Nonnull
+//        public MethodTemplate setRequestArgs(@Nonnull final String requestArgsCode) {
+//            this.context.remove(REQUEST_ARGS_NAME);
+//            this.context.put(REQUEST_ARGS_NAME, requestArgsCode);
+//            return this;
+//        }
 
         @Nonnull
         public MethodTemplate setRequestToInput(@Nonnull final String requestToInputCode) {
@@ -384,7 +400,6 @@ public class MethodGenerator {
             Handlebars handlebars = new Handlebars(loader).prettyPrint(true).with(EscapingStrategy.NOOP);
 
             Template template = handlebars.compile("service_method");
-
             return template.apply(context);
         }
 

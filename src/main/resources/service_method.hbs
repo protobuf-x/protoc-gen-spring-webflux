@@ -1,16 +1,10 @@
 public Mono<ServerResponse> {{restMethodName}}(ServerRequest serverRequest) {
-    {{requestBody}}
-    {{requestArgs}}
-    final {{protoInputType}} input;
     try {
-        {{prepareInput}}
-
-        {{resultProto}} res = stub.{{methodName}}(input);
-
-        return ServerResponse.ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .syncBody(JsonFormat.printer().print(res));
-
+        return {{prepareInput}}
+                .map(stub::{{methodName}})
+                .flatMap(res -> ServerResponse.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .syncBody({{resultType}}.fromProto(res)));
     } catch (Exception e) {
         throw Exceptions.propagate(e);
     }

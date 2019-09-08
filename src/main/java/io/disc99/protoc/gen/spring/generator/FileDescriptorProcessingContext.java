@@ -8,7 +8,6 @@ import com.github.jknack.handlebars.io.TemplateLoader;
 import com.google.common.base.CaseFormat;
 import com.google.googlejavaformat.java.Formatter;
 import com.google.googlejavaformat.java.FormatterException;
-import com.google.googlejavaformat.java.JavaFormatterOptions;
 import com.google.protobuf.DescriptorProtos.*;
 import com.google.protobuf.DescriptorProtos.SourceCodeInfo.Location;
 import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse.File;
