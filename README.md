@@ -23,9 +23,11 @@ package example.demo;
 
 service EchoService {
 
-    rpc GetEcho(EchoRequest) returns (EchoResponse) {}
+    rpc GetEcho(EchoRequest) returns (EchoResponse) {
+    }
 
-    rpc CreateEcho(CreateEchoRequest) returns (CreateEchoResponse) {}
+    rpc CreateEcho(CreateEchoRequest) returns (CreateEchoResponse) {
+    }
 }
 ```
 2. (Optional) Add a [`google.api.http`](https://github.com/googleapis/googleapis/blob/master/google/api/http.proto#L46) annotation to your .proto file for REST style API.
@@ -34,30 +36,26 @@ service EchoService {
 syntax = "proto3";
 
 package example.demo;
-+
 +import "google/api/annotations.proto";
-+
 
 // messages...
 
 service EchoService {
 
--    rpc GetEcho(EchoRequest) returns (EchoResponse) {}
-+    rpc GetEcho(EchoRequest) returns (EchoResponse) {
+    rpc GetEcho(EchoRequest) returns (EchoResponse) {
 +        // If you use REST API style
 +        option (google.api.http) = {
 +            get: "/echo/{echo}"
 +        };
-+    }
+    }
 
--    rpc CreateEcho(CreateEchoRequest) returns (CreateEchoResponse) {
-+    rpc CreateEcho(CreateEchoRequest) returns (CreateEchoResponse) {
+    rpc CreateEcho(CreateEchoRequest) returns (CreateEchoResponse) {
 +        // If you use REST API style
 +        option (google.api.http) = {
 +              post: "/echo"
 +              body: "*"
 +        };
-+    }
+    }
 }
 ```
 
