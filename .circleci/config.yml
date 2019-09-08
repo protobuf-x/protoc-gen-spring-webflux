@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 jobs:
   build:
     docker:
@@ -11,3 +11,16 @@ jobs:
           sudo cp plugin/protoc-gen-spring-webflux /usr/local/bin/
           echo "export PROTOC_GEN=${PWD}/plugin/build/libs" >> $BASH_ENV
       - run: ./gradlew example:generateProto example:test
+      - run: |
+          if [ -n "$CIRCLE_TAG" ]; then
+            tar -zcvf protoc-gen-spring-webflux.tar.gz plugin/build/libs/protoc-gen-spring-webflux.jar
+            .circleci/ghr $CIRCLE_TAG protoc-gen-spring-webflux.tar.gz
+          fi
+
+workflows:
+  workflow:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /.*/
