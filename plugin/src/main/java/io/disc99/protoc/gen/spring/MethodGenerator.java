@@ -309,7 +309,7 @@ public class MethodGenerator {
         MethodTemplate(@Nonnull final SpringMethodType springMethodType) {
             final MessageDescriptor inputDescriptor = serviceMethodDescriptor.getInputMessage();
             final MessageDescriptor outputDescriptor = serviceMethodDescriptor.getOutputMessage();
-            final ServiceMethodDescriptor.MethodType type = serviceMethodDescriptor.getType();
+            final MethodType type = serviceMethodDescriptor.getType();
             final String requestBodyType = getBodyType(true);
             final String protoInputType = getProtoInputType();
             final String responseBodyType = responseWrapper + "<" + getBodyType(false) + ">";

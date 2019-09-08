@@ -1,0 +1,100 @@
+syntax = "proto3";
+
+package example.demo;
+option java_multiple_files = true;
+option java_package = "com.example.demo";
+
+import "google/api/annotations.proto";
+
+message Echo {
+    int64 id = 1;
+    string content = 2;
+}
+
+message GetEchoRequest {
+    int64 id = 1;
+}
+
+message GetEchoResponse {
+    Echo echo = 1;
+}
+
+message DeleteEchoRequest {
+    int64 id = 1;
+}
+
+message DeleteEchoResponse {
+    Echo echo = 1;
+}
+
+message MultiGetEchoRequest {
+    repeated int64 id = 1;
+}
+
+message MultiGetEchoResponse {
+    repeated Echo echo = 1;
+}
+
+message NewEchoRequest {
+    Echo echo = 1;
+}
+
+message NewEchoResponse {
+    Echo echo = 1;
+}
+
+message UpdateEchoRequest {
+    int64 id = 1;
+    Echo new_echo = 2;
+}
+
+message UpdateEchoResponse {
+    Echo echo = 1;
+}
+
+service EchoService {
+    rpc GetEcho(GetEchoRequest) returns (GetEchoResponse) {
+    }
+
+    rpc MultiGetEcho(MultiGetEchoRequest) returns (MultiGetEchoResponse) {
+        option (google.api.http) = {
+            // The echo strings should get converted to parameters.
+            get: "/echo"
+        };
+    }
+
+    rpc MultiGetEchoX(MultiGetEchoRequest) returns (MultiGetEchoResponse) {
+        option (google.api.http) = {
+              post: "/echo/body"
+              body: "*"
+        };
+    }
+
+    rpc DeleteEcho(DeleteEchoRequest) returns (DeleteEchoResponse) {
+        option (google.api.http) = {
+            delete: "/echo/{id}"
+        };
+    }
+
+    rpc NewEcho(NewEchoRequest) returns (NewEchoResponse) {
+        option (google.api.http) = {
+            post: "/echo"
+            body: "echo"
+            additional_bindings {
+                post: "/echo/{echo.id}"
+                body: "echo"
+            }
+        };
+    }
+
+    rpc UpdateEcho(UpdateEchoRequest) returns (UpdateEchoResponse) {
+        option (google.api.http) = {
+            put: "/echo"
+            body: "new_echo"
+            additional_bindings {
+                patch: "/echo/{id}"
+                body: "new_echo"
+            }
+        };
+    }
+}
