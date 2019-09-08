@@ -7,4 +7,7 @@ jobs:
     steps:
       - checkout
       - run: ./gradlew plugin:shadowJar
+      - run: |
+          sudo cp plugin/protoc-gen-spring-webflux /usr/local/bin/
+          echo "export PROTOC_GEN=${PWD}/plugin/build/libs" >> $BASH_ENV
       - run: ./gradlew example:generateProto example:test
