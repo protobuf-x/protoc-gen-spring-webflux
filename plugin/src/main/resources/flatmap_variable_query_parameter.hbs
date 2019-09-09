@@ -1,0 +1,16 @@
+.flatMap(inputBuilder -> Mono.just(
+        serverRequest.queryParams().getOrDefault("{{variable}}", Collections.emptyList())
+            .stream()
+            .filter(p -> p != null && !p.equals(""))
+            .map(p -> {
+                try {
+                    return {{convert}};
+                } catch (NumberFormatException e) {
+                    throw new ServerWebInputException(e.getMessage());
+                }
+            })
+            .collect(Collectors.toList()))
+    .filter(Objects::nonNull)
+    .map({{variable}} -> {
+        {{variableSetter}}
+    }))

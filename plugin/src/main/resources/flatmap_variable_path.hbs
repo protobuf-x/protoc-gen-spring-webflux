@@ -1,0 +1,11 @@
+.flatMap(inputBuilder -> Mono.fromSupplier(() -> {
+        try {
+            return {{convert}};
+        } catch (NumberFormatException e) {
+            throw new ServerWebInputException(e.getMessage());
+        }
+    })
+    .filter(Objects::nonNull)
+    .map({{variable}} -> {
+        {{variableSetter}}
+    }))

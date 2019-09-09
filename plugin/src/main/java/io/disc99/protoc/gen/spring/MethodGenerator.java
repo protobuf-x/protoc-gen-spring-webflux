@@ -84,7 +84,7 @@ public class MethodGenerator {
 
     @Nonnull
     private MethodTemplate generateMethodFromHttpRule(@Nonnull final HttpRule httpRule,
-                                              @Nonnull final Optional<Integer> bindingIndex) {
+                                                      @Nonnull final Optional<Integer> bindingIndex) {
 //        if (clientStream()) {
 //            log.warn("HTTP Rule Patterns not supported for client-stream method: " +
 //                    serviceMethodDescriptor.getName() + "Generating default POST method.");
@@ -173,9 +173,9 @@ public class MethodGenerator {
 
     @Nonnull
     private MethodTemplate generateMethodCode(@Nonnull final String pattern,
-                                      @Nonnull final Optional<String> bodyPattern,
-                                      @Nonnull final SpringMethodType methodType,
-                                      @Nonnull final Optional<Integer> bindingIndex) {
+                                              @Nonnull final Optional<String> bodyPattern,
+                                              @Nonnull final SpringMethodType methodType,
+                                              @Nonnull final Optional<Integer> bindingIndex) {
         final PathTemplate template = new PathTemplate(pattern);
         final MessageDescriptor inputDescriptor = serviceMethodDescriptor.getInputMessage();
         final Set<String> boundVariables = template.getBoundVariables();
@@ -211,10 +211,10 @@ public class MethodGenerator {
                 final FieldDescriptor bodyField = inputDescriptor.getFieldDescriptors().stream()
                         .filter(fieldDescriptor -> fieldDescriptor.getProto().getName().equals(body))
                         .findFirst().orElseThrow(() -> new IllegalArgumentException("Body field: "
-                            + body + " does not exist. Valid fields are: " +
-                            inputDescriptor.getFieldDescriptors().stream()
-                                .map(FieldDescriptor::getName)
-                                .collect(Collectors.joining(", "))));
+                                + body + " does not exist. Valid fields are: " +
+                                inputDescriptor.getFieldDescriptors().stream()
+                                        .map(FieldDescriptor::getName)
+                                        .collect(Collectors.joining(", "))));
                 if (bodyField.isList() || bodyField.isMapField()) {
                     throw new IllegalArgumentException("Invalid body: " + body +
                             ". Body must refer to a non-repeated/map field.");
@@ -236,17 +236,12 @@ public class MethodGenerator {
 //            inputBuilderPrototype = "";
             // @RequestParam(name = <path>) <Type> <camelcasePath>
             fieldVisitor.getQueryParamFields().forEach((path, type) -> {
-//                requestArgs.add("@RequestParam(name = \"" + path + "\", required = " + type.getProto().getLabel().equals(Label.LABEL_REQUIRED) + ") " + type.getType() + " " + variableForPath(path));
-//                requestArgs.add(type.getType() + " " + variableForPath(path) + " = " + "serverRequest.queryParam(\"" + path + "\").map(p -> Arrays.asList(" + convertString("p", type.getTypeName()) + ")).orElse(null);");
-//                requestToInputSteps.add(generateVariableSetter(path, type));
-
-                requestToInputSteps.add(".flatMap(inputBuilder -> Mono.just(serverRequest.queryParam(\"" + path + "\").map(p -> Arrays.asList(" + convertString("p", type.getTypeName()) + ")).orElse(null))"
-                        + ".filter(Objects::nonNull).map("
-                        + variableForPath(path)
-                        + " -> {"
-                        + generateVariableSetter(path, type)
-                        + "}))");
-
+                Map<String, Object> context = new HashMap<>();
+                context.put("convert", convertString("p", type.getTypeName()));
+                context.put("type", type.getTypeName());
+                context.put("variable", variableForPath(path));
+                context.put("variableSetter", generateVariableSetter(path, type));
+                requestToInputSteps.add(apply("flatmap_variable_query_parameter", context));
             });
         }
 
@@ -255,23 +250,14 @@ public class MethodGenerator {
         //
         // @PathVariable(name = <path>) <Type> <camelcasePath>
         fieldVisitor.getPathFields().forEach((path, type) -> {
-//            requestArgs.add("@PathVariable(name = \"" + path + "\") " + type.getType() + " " + variableForPath(path));
-//            requestArgs.add(type.getType() + " " + variableForPath(path) + " = " + convertString("serverRequest.pathVariable(\"" + path + "\")", type.getType()) + ";");
-//            requestToInputSteps.add(generateVariableSetter(path, type));
-
-            requestToInputSteps.add(".flatMap(inputBuilder -> Mono.just(" + convertString("serverRequest.pathVariable(\"" + path + "\")", type.getType()) + ")"
-                    + ".filter(Objects::nonNull).map("
-                    + variableForPath(path)
-                    + " -> {"
-                    + generateVariableSetter(path, type)
-                    + "}))");
-
+            Map<String, Object> context = new HashMap<>();
+            context.put("convert", convertString("serverRequest.pathVariable(\"" + variableForPath(path) + "\")", type.getType()));
+            context.put("type", type.getType());
+            context.put("variable", variableForPath(path));
+            context.put("variableSetter", generateVariableSetter(path, type));
+            requestToInputSteps.add(apply("flatmap_variable_path", context));
         });
 
-//        final StringBuilder requestToInput = new StringBuilder(inputDescriptor.getQualifiedOriginalName())
-//                .append(".Builder inputBuilder = ")
-//                .append(inputDescriptor.getQualifiedOriginalName())
-//                .append(".newBuilder(").append(inputBuilderPrototype).append(");");
         final StringBuilder requestToInput = new StringBuilder()
                 .append("Mono.just(")
                 .append(inputDescriptor.getQualifiedOriginalName())
@@ -279,7 +265,6 @@ public class MethodGenerator {
 
         requestToInputSteps.forEach(requestToInput::append);
 
-//        requestToInput.append("input = inputBuilder.build();");
         requestToInput.append(".map(")
                 .append(inputDescriptor.getQualifiedOriginalName())
                 .append(".Builder::build)");
@@ -287,16 +272,22 @@ public class MethodGenerator {
         return new MethodTemplate(methodType)
                 .setPath(template.getQueryPath())
                 .setIsRequestJson(bodyPattern.isPresent())
-//                .setRequestBody(requestBody)
-//                .setRequestArgs(String.join("\n", requestArgs))
                 .setRequestToInput(requestToInput.toString())
-                .setRestMethodName(serviceMethodDescriptor.getName() +
+                .setRestMethodName(StringUtils.uncapitalize(serviceMethodDescriptor.getName()) +
                         bindingIndex.map(index -> Integer.toString(index)).orElse(""));
     }
 
+    @SneakyThrows
+    String apply(String file, Map<String, Object> context) {
+        TemplateLoader loader = new ClassPathTemplateLoader();
+        Handlebars handlebars = new Handlebars(loader).prettyPrint(true).with(EscapingStrategy.NOOP);
+        return handlebars.compile(file).apply(context);
+    }
+
+
     private class MethodTemplate {
 
-//        private static final String REQUEST_ARGS_NAME = "requestArgs";
+        //        private static final String REQUEST_ARGS_NAME = "requestArgs";
 //        private static final String REQUEST_BODY_NAME = "requestBody";
         private static final String PREPARE_INPUT_NAME = "prepareInput";
         private static final String PATH_NAME = "path";
@@ -345,7 +336,7 @@ public class MethodGenerator {
 //                            ".collect(Collectors.toList());";
 //            } else {
 //                defaultPrepareInput = "input = inputDto.toProto();";
-                defaultPrepareInput = "serverRequest.bodyToMono(" + requestBodyType + ".class).map(" + requestBodyType + "::toProto)";
+            defaultPrepareInput = "serverRequest.bodyToMono(" + requestBodyType + ".class).map(" + requestBodyType + "::toProto)";
 //            }
 
             context.put(PREPARE_INPUT_NAME, defaultPrepareInput);

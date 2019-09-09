@@ -35,6 +35,14 @@ message MultiGetEchoResponse {
     repeated Echo echo = 1;
 }
 
+message CreateEchoRequest {
+    Echo echo = 1;
+}
+
+message CreateEchoResponse {
+    Echo echo = 1;
+}
+
 message NewEchoRequest {
     Echo echo = 1;
 }
@@ -52,6 +60,14 @@ message UpdateEchoResponse {
     Echo echo = 1;
 }
 
+message ErrorEchoRequest {
+    int64 id = 1;
+}
+
+message ErrorEchoResponse {
+    Echo echo = 1;
+}
+
 service EchoService {
     rpc GetEcho(GetEchoRequest) returns (GetEchoResponse) {
         option (google.api.http) = {
@@ -66,13 +82,6 @@ service EchoService {
         };
     }
 
-    rpc MultiGetEchoX(MultiGetEchoRequest) returns (MultiGetEchoResponse) {
-        option (google.api.http) = {
-              post: "/echo/body"
-              body: "*"
-        };
-    }
-
     rpc DeleteEcho(DeleteEchoRequest) returns (DeleteEchoResponse) {
         option (google.api.http) = {
             delete: "/echo/{id}"
@@ -82,7 +91,11 @@ service EchoService {
     rpc NewEcho(NewEchoRequest) returns (NewEchoResponse) {
         option (google.api.http) = {
             post: "/echo"
-            body: "echo"
+            body: "*"
+            additional_bindings {
+                post: "/echo/in"
+                body: "echo"
+            }
             additional_bindings {
                 post: "/echo/{echo.id}"
                 body: "echo"
@@ -98,6 +111,12 @@ service EchoService {
                 patch: "/echo/{id}"
                 body: "new_echo"
             }
+        };
+    }
+
+    rpc ErrorEcho(ErrorEchoRequest) returns (ErrorEchoResponse) {
+        option (google.api.http) = {
+            get: "/echo/error/{id}"
         };
     }
 }

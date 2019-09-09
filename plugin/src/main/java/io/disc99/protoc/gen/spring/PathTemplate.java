@@ -1,5 +1,6 @@
 package io.disc99.protoc.gen.spring;
 
+import com.google.common.base.CaseFormat;
 import com.google.common.base.Preconditions;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -66,13 +67,19 @@ public class PathTemplate {
         return "/" + segments.stream()
                 .map(segment -> {
                     if (segment.getFieldPath().isPresent()) {
-                        return "{" + segment.getFieldPath().get() + "}";
+                        return "{" + variableForPath(segment.getFieldPath().get()) + "}";
                     } else {
                         return segment.getLiteral().orElseThrow(() ->
                                 new IllegalStateException("Should have field path or literal."));
                     }
                 })
                 .collect(Collectors.joining("/"));
+    }
+
+
+    @Nonnull
+    private String variableForPath(@Nonnull final String path) {
+        return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, path.replace(".", "_"));
     }
 
     private static class Segment {
