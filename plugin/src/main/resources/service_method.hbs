@@ -1,7 +1,7 @@
 public Mono<ServerResponse> {{restMethodName}}(ServerRequest serverRequest) {
     try {
         return {{prepareInput}}
-                .map(stub::{{methodName}})
+                .map({{serviceCall}})
                 .flatMap(res -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .syncBody({{resultType}}.fromProto(res)));

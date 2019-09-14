@@ -1,10 +1,5 @@
 package io.disc99.protoc.gen.spring;
 
-import com.github.jknack.handlebars.EscapingStrategy;
-import com.github.jknack.handlebars.Handlebars;
-import com.github.jknack.handlebars.Template;
-import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
-import com.github.jknack.handlebars.io.TemplateLoader;
 import com.google.api.HttpRule;
 import com.google.common.base.CaseFormat;
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Label;
@@ -12,13 +7,15 @@ import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Type;
 import com.google.protobuf.TextFormat;
 import io.disc99.protoc.gen.spring.generator.*;
 import io.disc99.protoc.gen.spring.generator.ServiceMethodDescriptor.MethodType;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.*;
-import java.util.stream.Collectors;
+
+import static io.disc99.protoc.gen.spring.generator.Template.apply;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 
 /**
  * A utility class to encapsulate the generation of HTTP methods for gRPC services.
@@ -45,39 +42,40 @@ public class MethodGenerator {
     }
 
     @Nonnull
-    public String generateCode() {
-        if (!serviceMethodDescriptor.getHttpRule().isPresent()) {
-            return new MethodTemplate(SpringMethodType.POST).render();
-        }
+    public String generateHandleCode() {
+        return getMethodTemplates().stream()
+                .map(MethodTemplate::renderHandle)
+                .collect(joining());
+    }
 
-        final HttpRule topLevelRule = serviceMethodDescriptor.getHttpRule().get();
-        final StringBuilder allMethodsCode = new StringBuilder();
-        allMethodsCode.append(generateMethodFromHttpRule(topLevelRule, Optional.empty()).render());
-
-        // No recursion allowed - additional bindings will not contain rules that contain
-        // additional bindings!
-        for (int i = 0; i < topLevelRule.getAdditionalBindingsCount(); ++i) {
-            allMethodsCode.append(generateMethodFromHttpRule(
-                    topLevelRule.getAdditionalBindings(i), Optional.of(i)).render());
-        }
-        return allMethodsCode.toString();
+    @Nonnull
+    public String generateProxyCode() {
+        return getMethodTemplates().stream()
+                .map(MethodTemplate::renderProxy)
+                .collect(joining());
     }
 
     @Nonnull
     public List<Map<String, Object>> getMethodContexts() {
+        return getMethodTemplates().stream()
+                .map(MethodTemplate::getContext)
+                .collect(toList());
+    }
+
+    private List<MethodTemplate> getMethodTemplates() {
         if (!serviceMethodDescriptor.getHttpRule().isPresent()) {
-            return Collections.singletonList(new MethodTemplate(SpringMethodType.POST).getContext());
+            return Collections.singletonList(new MethodTemplate(SpringMethodType.POST));
         }
 
         final HttpRule topLevelRule = serviceMethodDescriptor.getHttpRule().get();
-        final List<Map<String, Object>> allMethodsContexts = new ArrayList<>();
-        allMethodsContexts.add(generateMethodFromHttpRule(topLevelRule, Optional.empty()).getContext());
+        final List<MethodTemplate> allMethodsContexts = new ArrayList<>();
+        allMethodsContexts.add(generateMethodFromHttpRule(topLevelRule, Optional.empty()));
 
         // No recursion allowed - additional bindings will not contain rules that contain
         // additional bindings!
         for (int i = 0; i < topLevelRule.getAdditionalBindingsCount(); ++i) {
             allMethodsContexts.add(
-                    generateMethodFromHttpRule(topLevelRule.getAdditionalBindings(i), Optional.of(i)).getContext());
+                    generateMethodFromHttpRule(topLevelRule.getAdditionalBindings(i), Optional.of(i)));
         }
         return allMethodsContexts;
     }
@@ -187,7 +185,7 @@ public class MethodGenerator {
         // 2) Field is not bound. It may become a query parameter, or be in the request body.
         inputDescriptor.visitFields(fieldVisitor);
 
-        String requestBody = "";
+//        String requestBody = "";
 //        final List<String> requestArgs = new ArrayList<>();
         final List<String> requestToInputSteps = new ArrayList<>();
 
@@ -214,7 +212,7 @@ public class MethodGenerator {
                                 + body + " does not exist. Valid fields are: " +
                                 inputDescriptor.getFieldDescriptors().stream()
                                         .map(FieldDescriptor::getName)
-                                        .collect(Collectors.joining(", "))));
+                                        .collect(joining(", "))));
                 if (bodyField.isList() || bodyField.isMapField()) {
                     throw new IllegalArgumentException("Invalid body: " + body +
                             ". Body must refer to a non-repeated/map field.");
@@ -276,14 +274,6 @@ public class MethodGenerator {
                 .setRestMethodName(StringUtils.uncapitalize(serviceMethodDescriptor.getName()) +
                         bindingIndex.map(index -> Integer.toString(index)).orElse(""));
     }
-
-    @SneakyThrows
-    String apply(String file, Map<String, Object> context) {
-        TemplateLoader loader = new ClassPathTemplateLoader();
-        Handlebars handlebars = new Handlebars(loader).prettyPrint(true).with(EscapingStrategy.NOOP);
-        return handlebars.compile(file).apply(context);
-    }
-
 
     private class MethodTemplate {
 
@@ -385,13 +375,15 @@ public class MethodGenerator {
         }
 
         @Nonnull
-        @SneakyThrows // TODO
-        public String render() {
-            TemplateLoader loader = new ClassPathTemplateLoader();
-            Handlebars handlebars = new Handlebars(loader).prettyPrint(true).with(EscapingStrategy.NOOP);
+        public String renderHandle() {
+            context.put("serviceCall", apply("service_call_handle", context));
+            return apply("service_method", context);
+        }
 
-            Template template = handlebars.compile("service_method");
-            return template.apply(context);
+        @Nonnull
+        public String renderProxy() {
+            context.put("serviceCall", apply("service_call_proxy", context));
+            return apply("service_method", context);
         }
 
         @Nonnull

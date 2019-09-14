@@ -1,9 +1,11 @@
 package com.example.demo;
 
 import com.example.demo.ExampleHandlers.EchoServiceHandler;
+import com.example.demo.ExampleHandlers.EchoServiceProxy;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.web.ResourceProperties;
@@ -12,6 +14,8 @@ import org.springframework.boot.web.reactive.error.ErrorAttributes;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,21 +35,42 @@ public class DemoApplication {
         SpringApplication.run(DemoApplication.class, args);
     }
 
-    @Bean
-    EchoServiceHandler exampleHandlers() {
-        ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 6565)
-                .usePlaintext()
-                .build();
-        EchoServiceGrpc.EchoServiceBlockingStub stub = EchoServiceGrpc.newBlockingStub(channel);
-        return new EchoServiceHandler(stub);
+    @Configuration
+    @Profile("grpc-server")
+    class GRrpcServerConfig {
+        @Bean
+        EchoServiceHandler exampleHandler(EchoService service) {
+            return new EchoServiceHandler(service);
+        }
+
+        @Bean
+        RouterFunction<ServerResponse> routingGrpcServer(EchoServiceHandler handler) {
+            return RouterFunctions
+                    .route(path("/echo*/**"), handler::handleAll)
+                    .andRoute(path("/example.demo.EchoService/**"), handler::handleAll)
+                    ;
+        }
     }
 
-    @Bean
-    RouterFunction<ServerResponse> routing(EchoServiceHandler handler) {
-        return RouterFunctions
-                .route(path("/echo*/**"), handler::handleAll)
-                .andRoute(path("/example.demo.EchoService/**"), handler::handleAll)
-                ;
+    @Configuration
+    @Profile("proxy-server")
+    class ProxyServerConfig {
+        @Bean
+        EchoServiceProxy exampleProxy(@Value("${grpc.port}") int port) {
+            ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", port)
+                    .usePlaintext()
+                    .build();
+            EchoServiceGrpc.EchoServiceBlockingStub stub = EchoServiceGrpc.newBlockingStub(channel);
+            return new EchoServiceProxy(stub);
+        }
+
+        @Bean
+        RouterFunction<ServerResponse> routingProxyServer(EchoServiceProxy handler) {
+            return RouterFunctions
+                    .route(path("/echo*/**"), handler::proxyAll)
+                    .andRoute(path("/example.demo.EchoService/**"), handler::proxyAll)
+                    ;
+        }
     }
 
     @Bean

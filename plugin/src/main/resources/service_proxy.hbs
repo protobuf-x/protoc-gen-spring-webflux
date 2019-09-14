@@ -1,12 +1,12 @@
-public static class {{serviceName}}Handler {
+public static class {{serviceName}}Proxy {
 
-    {{package}}.{{serviceName}}Grpc.{{serviceName}}BlockingStub stub;
+    private {{package}}.{{serviceName}}Grpc.{{serviceName}}BlockingStub stub;
 
-    public {{serviceName}}Handler({{package}}.{{serviceName}}Grpc.{{serviceName}}BlockingStub stub) {
+    public {{serviceName}}Proxy({{package}}.{{serviceName}}Grpc.{{serviceName}}BlockingStub stub) {
         this.stub = stub;
     }
 
-    public Mono<ServerResponse> handleAll(ServerRequest serverRequest) {
+    public Mono<ServerResponse> proxyAll(ServerRequest serverRequest) {
 
         {{#methods}}
             {{#if isRest}}
@@ -23,5 +23,5 @@ public static class {{serviceName}}Handler {
         throw new ResponseStatusException(HttpStatus.NOT_FOUND);
     }
 
-    {{#methodDefinitions}}{{.}}{{/methodDefinitions}}
+    {{#proxyMethodDefinitions}}{{.}}{{/proxyMethodDefinitions}}
 }

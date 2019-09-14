@@ -1,10 +1,5 @@
 package io.disc99.protoc.gen.spring.generator;
 
-import com.github.jknack.handlebars.EscapingStrategy;
-import com.github.jknack.handlebars.Handlebars;
-import com.github.jknack.handlebars.Template;
-import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
-import com.github.jknack.handlebars.io.TemplateLoader;
 import com.google.common.base.CaseFormat;
 import com.google.googlejavaformat.java.Formatter;
 import com.google.googlejavaformat.java.FormatterException;
@@ -19,6 +14,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static io.disc99.protoc.gen.spring.generator.Template.apply;
+import static java.util.stream.Collectors.toList;
 
 /**
  * This object keeps common information and state about
@@ -42,24 +40,23 @@ class FileDescriptorProcessingContext {
     /**
      * The protobuf package for the {@link FileDescriptorProto}.
      * For example, if we have a file Test.proto:
-     *
+     * <p>
      * syntax = "proto2";
      * package testPkg; <-- This is the protoPkg
-     *
+     * <p>
      * option java_package = "com.vmturbo.testPkg";
-     *
      */
     private final String protoPkg;
 
     /**
      * The Java package for the {@link FileDescriptorProto}.
      * For example, if we have a file Test.proto:
-     *
+     * <p>
      * syntax = "proto2";
      * package testPkg;
-     *
+     * <p>
      * option java_package = "com.vmturbo.testPkg"; <-- This is the javaPkg
-     *
+     * <p>
      * If we there is no java_package option in the proto file
      * then this is equivalent to {@link FileDescriptorProcessingContext#protoPkg}.
      */
@@ -147,10 +144,6 @@ class FileDescriptorProcessingContext {
     @Nonnull
     @SneakyThrows // TODO remove
     public File generateFile() {
-        TemplateLoader loader = new ClassPathTemplateLoader();
-        Handlebars handlebars = new Handlebars(loader).prettyPrint(true).with(EscapingStrategy.NOOP);
-
-        Template template = handlebars.compile("file");
         HashMap<String, Object> context = new HashMap<>();
         context.put("pluginName", generator.getPluginName());
         context.put("imports", generator.generateImports());
@@ -158,25 +151,25 @@ class FileDescriptorProcessingContext {
         context.put("pkgName", javaPkg);
         context.put("outerClassName", outerClass.getPluginJavaClass());
         context.put("messageCode", fileDescriptorProto.getMessageTypeList().stream()
-                        .map(message -> registry.getMessageDescriptor(message.getName()))
-                        .map(generator::generateCode)
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-                        .collect(Collectors.toList()));
+                .map(message -> registry.getMessageDescriptor(message.getName()))
+                .map(generator::generateCode)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(toList()));
         context.put("enumCode", fileDescriptorProto.getEnumTypeList().stream()
-                        .map(message -> registry.getMessageDescriptor(message.getName()))
-                        .map(generator::generateCode)
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-                        .collect(Collectors.toList()));
+                .map(message -> registry.getMessageDescriptor(message.getName()))
+                .map(generator::generateCode)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(toList()));
         context.put("serviceCode", fileDescriptorProto.getServiceList().stream()
-                        .map(message -> registry.getMessageDescriptor(message.getName()))
-                        .map(generator::generateCode)
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-                        .collect(Collectors.toList()));
+                .map(message -> registry.getMessageDescriptor(message.getName()))
+                .map(generator::generateCode)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(toList()));
 
-        final String generatedFile = template.apply(context);
+        final String generatedFile = apply("file", context);
 
         // Run the formatter to pretty-print the code.
         log.info("Running formatter...");
@@ -184,7 +177,7 @@ class FileDescriptorProcessingContext {
         try {
             final String formattedContent = new Formatter().formatSource(generatedFile);
             return File.newBuilder()
-                    .setName(javaPkg.replace('.','/') + "/" + outerClass.getPluginJavaClass() + ".java")
+                    .setName(javaPkg.replace('.', '/') + "/" + outerClass.getPluginJavaClass() + ".java")
 //                    .setName("./" + outerClass.getPluginJavaClass() + ".java")
                     .setContent(formattedContent)
                     .build();
@@ -394,7 +387,7 @@ class FileDescriptorProcessingContext {
 
         /**
          * If true, the java_multiple_files option is set in the file descriptor proto.
-         *
+         * <p>
          * Summary of the option (from google/protobuf/descriptor.proto):
          * If set true, then the Java code generator will generate a separate .java
          * file for each top-level message, enum, and service defined in the .proto

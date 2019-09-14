@@ -1,0 +1,20 @@
+request -> {
+      List<{{resultProto}}> responseList = new ArrayList<>();
+      StreamObserver<{{resultProto}}> responseObserver = new StreamObserver<{{resultProto}}>() {
+            @Override
+            public void onNext({{resultProto}} value) {
+               responseList.add(value);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                throw Exceptions.propagate(t);
+            }
+
+            @Override
+            public void onCompleted() {
+            }
+      };
+      service.{{methodName}}(request, responseObserver);
+      return responseList.get(0);
+}

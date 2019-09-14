@@ -9,7 +9,7 @@ import org.lognet.springboot.grpc.GRpcService;
 import static java.util.stream.Collectors.toList;
 
 @GRpcService
-public class GrpcEndpoint extends EchoServiceGrpc.EchoServiceImplBase {
+public class EchoService extends EchoServiceGrpc.EchoServiceImplBase {
 
     @Override
     public void getEcho(GetEchoRequest request, StreamObserver<GetEchoResponse> responseObserver) {

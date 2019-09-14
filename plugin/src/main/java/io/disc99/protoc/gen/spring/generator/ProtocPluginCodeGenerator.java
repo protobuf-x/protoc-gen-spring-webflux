@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
+
 /**
  * This is the central class that does the heavy lifting of:
  * 1) Reading and parsing the {@link CodeGeneratorRequest}
@@ -171,7 +173,7 @@ public abstract class ProtocPluginCodeGenerator {
                         .map(this::generateFile)
                         .filter(Optional::isPresent)
                         .map(Optional::get)
-                        .collect(Collectors.toList()))
+                        .collect(toList()))
                 .build();
 
         final BufferedOutputStream outputStream = new BufferedOutputStream(System.out);

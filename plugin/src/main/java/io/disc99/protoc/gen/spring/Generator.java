@@ -1,21 +1,19 @@
 package io.disc99.protoc.gen.spring;
 
 
-import java.util.*;
-
-import javax.annotation.Nonnull;
-
-import com.github.jknack.handlebars.EscapingStrategy;
-import com.github.jknack.handlebars.Handlebars;
-import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
-import com.github.jknack.handlebars.io.TemplateLoader;
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.DescriptorProtos.DescriptorProto;
 import io.disc99.protoc.gen.spring.generator.*;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+import static io.disc99.protoc.gen.spring.generator.Template.apply;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -70,11 +68,20 @@ class Generator extends ProtocPluginCodeGenerator {
                         new MethodGenerator(serviceDescriptor, serviceMethodDescriptor, responseWrapper, parameters).getMethodContexts())
                 .flatMap(Collection::stream)
                 .collect(toList()));
-        context.put("methodDefinitions", serviceDescriptor.getMethodDescriptors().stream()
+
+        context.put("handleMethodDefinitions", serviceDescriptor.getMethodDescriptors().stream()
                 .map(serviceMethodDescriptor ->
-                        new MethodGenerator(serviceDescriptor, serviceMethodDescriptor, responseWrapper, parameters).generateCode())
+                        new MethodGenerator(serviceDescriptor, serviceMethodDescriptor, responseWrapper, parameters).generateHandleCode())
                 .collect(toList()));
-        return Optional.of(apply("service", context));
+        String serviceHandler = apply("service_handler", context);
+
+        context.put("proxyMethodDefinitions", serviceDescriptor.getMethodDescriptors().stream()
+                .map(serviceMethodDescriptor ->
+                        new MethodGenerator(serviceDescriptor, serviceMethodDescriptor, responseWrapper, parameters).generateProxyCode())
+                .collect(toList()));
+        String serviceProxy = apply("service_proxy", context);
+
+        return Optional.of(serviceHandler + serviceProxy);
     }
 
     /**
@@ -153,7 +160,7 @@ class Generator extends ProtocPluginCodeGenerator {
         } else {
             context.put("hasOneOf", false);
         }
-        return apply("field_decl_template", context);
+        return apply("field_decl", context);
     }
 
     /**
@@ -179,7 +186,7 @@ class Generator extends ProtocPluginCodeGenerator {
             context.put("isMapMsg", value.getContentMessage().isPresent());
 
         }
-        return apply("add_field_to_proto_builder", context);
+        return apply("field_to_proto_builder", context);
     }
 
     /**
@@ -216,13 +223,6 @@ class Generator extends ProtocPluginCodeGenerator {
             context.put("mapValType", value.getTypeName());
         }
 
-        return apply("set_field_from_proto_template", context);
-    }
-
-    @SneakyThrows
-    String apply(String file, HashMap<String, Object> context) {
-        TemplateLoader loader = new ClassPathTemplateLoader();
-        Handlebars handlebars = new Handlebars(loader).prettyPrint(true).with(EscapingStrategy.NOOP);
-        return handlebars.compile(file).apply(context);
+        return apply("field_from_proto", context);
     }
 }
