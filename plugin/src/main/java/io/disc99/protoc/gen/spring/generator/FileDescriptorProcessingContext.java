@@ -142,7 +142,6 @@ class FileDescriptorProcessingContext {
     }
 
     @Nonnull
-    @SneakyThrows // TODO remove
     public File generateFile() {
         HashMap<String, Object> context = new HashMap<>();
         context.put("pluginName", generator.getPluginName());

@@ -83,11 +83,6 @@ public class MethodGenerator {
     @Nonnull
     private MethodTemplate generateMethodFromHttpRule(@Nonnull final HttpRule httpRule,
                                                       @Nonnull final Optional<Integer> bindingIndex) {
-//        if (clientStream()) {
-//            log.warn("HTTP Rule Patterns not supported for client-stream method: " +
-//                    serviceMethodDescriptor.getName() + "Generating default POST method.");
-//            return new MethodTemplate(SpringMethodType.POST).render();
-//        }
         switch (httpRule.getPatternCase()) {
             case GET:
                 return generateMethodCode(httpRule.getGet(), Optional.empty(),
@@ -185,22 +180,15 @@ public class MethodGenerator {
         // 2) Field is not bound. It may become a query parameter, or be in the request body.
         inputDescriptor.visitFields(fieldVisitor);
 
-//        String requestBody = "";
-//        final List<String> requestArgs = new ArrayList<>();
         final List<String> requestToInputSteps = new ArrayList<>();
 
-//        final String inputBuilderPrototype;
         if (bodyPattern.isPresent()) {
             final String body = StringUtils.strip(bodyPattern.get());
             if (body.equals("*")) {
-//                requestArgs.add("@RequestBody " + getBodyType(true) + " inputDto");
-//                requestBody = getBodyType(true) + " inputDto = serverRequest.bodyToMono(" + getBodyType(true) + ".class).block();";
-//                inputBuilderPrototype = "inputDto.toProto()";
                 requestToInputSteps.add(".flatMap(inputBuilder -> serverRequest.bodyToMono("
                         + getBodyType(true)
                         + ".class).map(inputDto -> inputBuilder.mergeFrom(inputDto.toProto())))");
             } else {
-//                inputBuilderPrototype = "";
                 if (body.contains(".")) {
                     throw new IllegalArgumentException("Invalid body: " + body + ". Body must refer to a top-level field.");
                 }
@@ -217,10 +205,6 @@ public class MethodGenerator {
                     throw new IllegalArgumentException("Invalid body: " + body +
                             ". Body must refer to a non-repeated/map field.");
                 }
-//                requestArgs.add("@RequestBody(required = " + bodyField.isRequired() + ") " + bodyField.getType() + " " + variableForPath(body));
-//                requestBody = bodyField.getType() + " " + variableForPath(body) + " = serverRequest.bodyToMono(" + bodyField.getType() + ".class).block();";
-
-//                requestToInputSteps.add(generateVariableSetter(body, bodyField));
 
                 requestToInputSteps.add(".flatMap(inputBuilder -> serverRequest.bodyToMono("
                         + bodyField.getType()
@@ -231,8 +215,6 @@ public class MethodGenerator {
                         + "}))");
             }
         } else {
-//            inputBuilderPrototype = "";
-            // @RequestParam(name = <path>) <Type> <camelcasePath>
             fieldVisitor.getQueryParamFields().forEach((path, type) -> {
                 Map<String, Object> context = new HashMap<>();
                 context.put("convert", convertString("p", type.getTypeName()));
@@ -277,8 +259,6 @@ public class MethodGenerator {
 
     private class MethodTemplate {
 
-        //        private static final String REQUEST_ARGS_NAME = "requestArgs";
-//        private static final String REQUEST_BODY_NAME = "requestBody";
         private static final String PREPARE_INPUT_NAME = "prepareInput";
         private static final String PATH_NAME = "path";
         private static final String REST_METHOD_NAME = "restMethodName";
@@ -315,36 +295,10 @@ public class MethodGenerator {
                     && serviceMethodDescriptor.getHttpRule().isPresent());
             // Defaults.
             context.put(IS_REQUEST_JSON, true);
-//            context.put(REQUEST_ARGS_NAME, "@RequestBody " + requestBodyType + " inputDto");
-//            context.put(REQUEST_BODY_NAME, requestBodyType + " inputDto = serverRequest.bodyToMono(" + requestBodyType + ".class).block();");
             context.put(PATH_NAME, "/" + serviceDescriptor.getName() + "/" + StringUtils.uncapitalize(serviceMethodDescriptor.getName()));
             context.put(REST_METHOD_NAME, StringUtils.uncapitalize(serviceMethodDescriptor.getName()));
-            final String defaultPrepareInput;
-//            if (clientStream()) {
-//                defaultPrepareInput = "input = inputDto.stream()" +
-//                            ".map(dto -> dto.toProto())" +
-//                            ".collect(Collectors.toList());";
-//            } else {
-//                defaultPrepareInput = "input = inputDto.toProto();";
-            defaultPrepareInput = "serverRequest.bodyToMono(" + requestBodyType + ".class).map(" + requestBodyType + "::toProto)";
-//            }
-
-            context.put(PREPARE_INPUT_NAME, defaultPrepareInput);
+            context.put(PREPARE_INPUT_NAME, "serverRequest.bodyToMono(" + requestBodyType + ".class).map(" + requestBodyType + "::toProto)");
         }
-
-//        @Nonnull
-//        public MethodTemplate setRequestBody(@Nonnull final String requestBodyCode) {
-//            this.context.remove(REQUEST_BODY_NAME);
-//            this.context.put(REQUEST_BODY_NAME, requestBodyCode);
-//            return this;
-//        }
-
-//        @Nonnull
-//        public MethodTemplate setRequestArgs(@Nonnull final String requestArgsCode) {
-//            this.context.remove(REQUEST_ARGS_NAME);
-//            this.context.put(REQUEST_ARGS_NAME, requestArgsCode);
-//            return this;
-//        }
 
         @Nonnull
         public MethodTemplate setRequestToInput(@Nonnull final String requestToInputCode) {
@@ -396,33 +350,13 @@ public class MethodGenerator {
     private String getBodyType(final boolean request) {
         final MessageDescriptor descriptor = request ?
                 serviceMethodDescriptor.getInputMessage() : serviceMethodDescriptor.getOutputMessage();
-//        final boolean stream = request ? clientStream() : serverStream();
-
-        String requestBodyType = descriptor.getQualifiedName();
-//        if (stream) {
-//            requestBodyType = "List<" + requestBodyType + ">";
-//        }
-        return requestBodyType;
+        return descriptor.getQualifiedName();
     }
 
     private String getProtoInputType() {
         final MessageDescriptor descriptor = serviceMethodDescriptor.getInputMessage();
-        String requestBodyType = descriptor.getQualifiedOriginalName();
-//        if (clientStream()) {
-//            requestBodyType = "List<" + requestBodyType + ">";
-//        }
-        return requestBodyType;
+        return descriptor.getQualifiedOriginalName();
     }
-
-//    private boolean clientStream() {
-//        return serviceMethodDescriptor.getType() == MethodType.CLIENT_STREAM ||
-//            serviceMethodDescriptor.getType() == MethodType.BI_STREAM;
-//    }
-//
-//    private boolean serverStream() {
-//        return serviceMethodDescriptor.getType() == MethodType.SERVER_STREAM ||
-//                serviceMethodDescriptor.getType() == MethodType.BI_STREAM;
-//    }
 
     static class MethodGenerationFieldVisitor implements MessageDescriptor.MessageFieldVisitor {
         private final Deque<String> path;
