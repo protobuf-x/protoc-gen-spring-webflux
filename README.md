@@ -7,11 +7,11 @@ It reads protobuf service definitions and generates Spring WebFlux handler(for H
 translates RPC and RESTful HTTP API into gRPC.
 
 * WebFlux HTTP server vs WebFlux Proxy server
-![image](https://user-images.githubusercontent.com/5003722/64909510-216e3a80-d748-11e9-9d50-c1fd789961b6.png)
-  * WebFlux HTTP server: By mapping the http request directly to the grpc service call, 
-  the grpc server is converted to an Http server with minimal configuration.
+  * WebFlux HTTP server: By mapping the http request directly to the gRPC service call, 
+  the gRPC server is converted to an Http server with minimal configuration.
   * WebFlux Proxy server: Uses an external HTTP server separately from the gRPC server to convert Http requests to gRPC calls.
   Designed for use cases like gateway patterns.
+![image](https://user-images.githubusercontent.com/5003722/64909510-216e3a80-d748-11e9-9d50-c1fd789961b6.png)
 
 
 * RPC style vs RESTful style
@@ -110,8 +110,7 @@ class HttpServerConfg {
             .route(path("/echo*/**"), handler::handleAll)
             // Handler can be routed individually by using the generated method.
             .andRoute(GET("/echo/{id}"), handler::getEcho)
-            .andRoute(POST("/echo"), handler::createEcho)
-        ;
+            .andRoute(POST("/echo"), handler::createEcho);
     }
 }
 ```
@@ -139,8 +138,7 @@ class ProxyServerConfg {
             .route(path("/echo*/**"), handler::proxyAll)
             // Handler can be routed individually by using the generated method.
             .andRoute(GET("/echo/{id}"), handler::getEcho)
-            .andRoute(POST("/echo"), handler::createEcho)
-        ;
+            .andRoute(POST("/echo"), handler::createEcho);
     }
 }
 ```

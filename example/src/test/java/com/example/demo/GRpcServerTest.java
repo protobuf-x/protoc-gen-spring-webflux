@@ -22,7 +22,7 @@ public class GRpcServerTest {
         client.get().uri("/echo/1").exchange()
                 .expectStatus().isOk()
                 .expectBody()
-                .json("{\"echo\":{\"id\":1,\"content\":\"GrpcEndpoint#getEcho\"}}");
+                .json("{\"echo\":{\"id\":1,\"content\":\"EchoService#getEcho\"}}");
     }
 
     @Test
@@ -38,14 +38,14 @@ public class GRpcServerTest {
     void test_get_query() {
         client.get().uri("/echo?id=1").exchange()
                 .expectStatus().isOk()
-                .expectBody().json("{\"echo\":[{\"id\":1,\"content\":\"GrpcEndpoint#multiGetEcho\"}]}");
+                .expectBody().json("{\"echo\":[{\"id\":1,\"content\":\"EchoService#multiGetEcho\"}]}");
     }
 
     @Test
     void test_get_query_array() {
         client.get().uri("/echo?id=1&id=2").exchange()
                 .expectStatus().isOk()
-                .expectBody().json("{\"echo\":[{\"id\":1,\"content\":\"GrpcEndpoint#multiGetEcho\"},{\"id\":2,\"content\":\"GrpcEndpoint#multiGetEcho\"}]}");
+                .expectBody().json("{\"echo\":[{\"id\":1,\"content\":\"EchoService#multiGetEcho\"},{\"id\":2,\"content\":\"EchoService#multiGetEcho\"}]}");
     }
 
     @Test
@@ -75,7 +75,7 @@ public class GRpcServerTest {
         client.delete()
                 .uri("/echo/1").exchange()
                 .expectStatus().isOk()
-                .expectBody().json("{\"echo\":{\"id\":1,\"content\":\"GrpcEndpoint#deleteEcho\"}}");
+                .expectBody().json("{\"echo\":{\"id\":1,\"content\":\"EchoService#deleteEcho\"}}");
     }
 
     @Test
@@ -84,7 +84,7 @@ public class GRpcServerTest {
                 .uri("/echo").contentType(APPLICATION_JSON)
                 .body(fromObject("{\"echo\":{\"id\":1,\"content\":\"test\"}}")).exchange()
                 .expectStatus().isOk()
-                .expectBody().json("{\"echo\":{\"id\":1,\"content\":\"GrpcEndpoint#newEcho\"}}");
+                .expectBody().json("{\"echo\":{\"id\":1,\"content\":\"EchoService#newEcho\"}}");
     }
 
     @Test
@@ -93,7 +93,7 @@ public class GRpcServerTest {
                 .uri("/echo").contentType(APPLICATION_JSON)
                 .body(fromObject("{}")).exchange()
                 .expectStatus().isOk()
-                .expectBody().json("{\"echo\":{\"id\":0,\"content\":\"GrpcEndpoint#newEcho\"}}");
+                .expectBody().json("{\"echo\":{\"id\":0,\"content\":\"EchoService#newEcho\"}}");
     }
 
     @Test
@@ -102,7 +102,7 @@ public class GRpcServerTest {
                 .uri("/echo/in").contentType(APPLICATION_JSON)
                 .body(fromObject("{\"id\":1,\"content\":\"test\"}")).exchange()
                 .expectStatus().isOk()
-                .expectBody().json("{\"echo\":{\"id\":1,\"content\":\"GrpcEndpoint#newEcho\"}}");
+                .expectBody().json("{\"echo\":{\"id\":1,\"content\":\"EchoService#newEcho\"}}");
     }
 
     @Test
@@ -111,7 +111,7 @@ public class GRpcServerTest {
                 .uri("/echo/1").contentType(APPLICATION_JSON)
                 .body(fromObject("{\"id\":100,\"content\":\"test\"}")).exchange()
                 .expectStatus().isOk()
-                .expectBody().json("{\"echo\":{\"id\":1,\"content\":\"GrpcEndpoint#newEcho\"}}");
+                .expectBody().json("{\"echo\":{\"id\":1,\"content\":\"EchoService#newEcho\"}}");
     }
 
     @Test
@@ -120,7 +120,7 @@ public class GRpcServerTest {
                 .uri("/echo").contentType(APPLICATION_JSON)
                 .body(fromObject("{\"id\":1,\"content\":\"test\"}")).exchange()
                 .expectStatus().isOk()
-                .expectBody().json("{\"echo\":{\"id\":1,\"content\":\"GrpcEndpoint#updateEcho\"}}");
+                .expectBody().json("{\"echo\":{\"id\":1,\"content\":\"EchoService#updateEcho\"}}");
     }
 
     @Test
@@ -129,7 +129,7 @@ public class GRpcServerTest {
                 .uri("/echo/1").contentType(APPLICATION_JSON)
                 .body(fromObject("{\"id\":100,\"content\":\"test\"}")).exchange()
                 .expectStatus().isOk()
-                .expectBody().json("{\"echo\":{\"id\":100,\"content\":\"GrpcEndpoint#updateEcho\"}}");
+                .expectBody().json("{\"echo\":{\"id\":100,\"content\":\"EchoService#updateEcho\"}}");
     }
 
     @Test

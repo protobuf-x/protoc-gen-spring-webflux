@@ -14,7 +14,7 @@ public class EchoService extends EchoServiceGrpc.EchoServiceImplBase {
     @Override
     public void getEcho(GetEchoRequest request, StreamObserver<GetEchoResponse> responseObserver) {
         GetEchoResponse res = GetEchoResponse.newBuilder()
-                .setEcho(createEcho(request.getId(), "GrpcEndpoint#getEcho"))
+                .setEcho(createEcho(request.getId(), "EchoService#getEcho"))
                 .build();
 
         ok(responseObserver, res);
@@ -24,7 +24,7 @@ public class EchoService extends EchoServiceGrpc.EchoServiceImplBase {
     public void multiGetEcho(MultiGetEchoRequest request, StreamObserver<MultiGetEchoResponse> responseObserver) {
         MultiGetEchoResponse res = MultiGetEchoResponse.newBuilder()
                 .addAllEcho(request.getIdList().stream()
-                        .map(id -> createEcho(id, "GrpcEndpoint#multiGetEcho"))
+                        .map(id -> createEcho(id, "EchoService#multiGetEcho"))
                         .collect(toList())
                 ).build();
 
@@ -34,7 +34,7 @@ public class EchoService extends EchoServiceGrpc.EchoServiceImplBase {
     @Override
     public void deleteEcho(DeleteEchoRequest request, StreamObserver<DeleteEchoResponse> responseObserver) {
         DeleteEchoResponse res = DeleteEchoResponse.newBuilder()
-                .setEcho(createEcho(request.getId(), "GrpcEndpoint#deleteEcho"))
+                .setEcho(createEcho(request.getId(), "EchoService#deleteEcho"))
                 .build();
 
         ok(responseObserver, res);
@@ -43,7 +43,7 @@ public class EchoService extends EchoServiceGrpc.EchoServiceImplBase {
     @Override
     public void newEcho(NewEchoRequest request, StreamObserver<NewEchoResponse> responseObserver) {
         NewEchoResponse res = NewEchoResponse.newBuilder()
-                .setEcho(createEcho(request.getEcho().getId(), "GrpcEndpoint#newEcho"))
+                .setEcho(createEcho(request.getEcho().getId(), "EchoService#newEcho"))
                 .build();
 
         ok(responseObserver, res);
@@ -52,7 +52,7 @@ public class EchoService extends EchoServiceGrpc.EchoServiceImplBase {
     @Override
     public void updateEcho(UpdateEchoRequest request, StreamObserver<UpdateEchoResponse> responseObserver) {
         UpdateEchoResponse res = UpdateEchoResponse.newBuilder()
-                .setEcho(createEcho(request.getNewEcho().getId(), "GrpcEndpoint#updateEcho"))
+                .setEcho(createEcho(request.getNewEcho().getId(), "EchoService#updateEcho"))
                 .build();
         ok(responseObserver, res);
     }
