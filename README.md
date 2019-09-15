@@ -23,7 +23,7 @@ translates RPC and RESTful HTTP API into gRPC.
 
 ## Installation
 * Download the latest binaries from [Release](https://github.com/disc99/protoc-gen-spring-webflux/releases).
-* Since the protoc plugin is a jar file, it is recommended to use it from an [external script](https://github.com/disc99/protoc-gen-spring-webflux/blob/master/protoc-gen-spring-webflux).
+* Since the protoc plugin is a jar file, it is recommended to use it from an [external script](./plugin/protoc-gen-spring-webflux).
 
 ## Usage
 
