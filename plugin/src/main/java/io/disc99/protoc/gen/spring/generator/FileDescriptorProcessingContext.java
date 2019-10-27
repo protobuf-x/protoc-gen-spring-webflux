@@ -6,9 +6,9 @@ import com.google.googlejavaformat.java.FormatterException;
 import com.google.protobuf.DescriptorProtos.*;
 import com.google.protobuf.DescriptorProtos.SourceCodeInfo.Location;
 import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse.File;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -22,8 +22,9 @@ import static java.util.stream.Collectors.toList;
  * This object keeps common information and state about
  * the traversal of a single {@link FileDescriptorProto}.
  */
-@Slf4j
 class FileDescriptorProcessingContext {
+
+    private static final Logger log = LogManager.getLogger();
 
     static final String EMPTY_COMMENT = "\"\"";
 

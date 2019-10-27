@@ -4,7 +4,6 @@ package io.disc99.protoc.gen.spring;
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.DescriptorProtos.DescriptorProto;
 import io.disc99.protoc.gen.spring.generator.*;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -20,7 +19,6 @@ import static java.util.stream.Collectors.toList;
  * An implementation of {@link ProtocPluginCodeGenerator} that generates Spring Framework-compatible
  * WebFlux handlers and swagger-annotated POJOs for gRPC services.
  */
-@Slf4j
 class Generator extends ProtocPluginCodeGenerator {
 
     /**

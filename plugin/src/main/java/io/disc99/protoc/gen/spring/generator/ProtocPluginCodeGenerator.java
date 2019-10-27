@@ -9,17 +9,14 @@ import com.google.protobuf.ExtensionRegistry;
 import com.google.protobuf.compiler.PluginProtos.CodeGeneratorRequest;
 import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse;
 import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse.File;
-import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
@@ -33,8 +30,9 @@ import static java.util.stream.Collectors.toList;
  * code generation methods, and then use {@link ProtocPluginCodeGenerator#generate()} from
  * their plugin's Main class to do the generation.
  */
-@Slf4j
 public abstract class ProtocPluginCodeGenerator {
+
+    private static final Logger log = LogManager.getLogger();
 
     /**
      * Stores information about processed messages.

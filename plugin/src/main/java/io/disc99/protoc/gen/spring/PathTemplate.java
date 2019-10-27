@@ -2,8 +2,9 @@ package io.disc99.protoc.gen.spring;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Preconditions;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -27,8 +28,9 @@ import static java.util.stream.Collectors.toSet;
  *     FieldPath = IDENT { "." IDENT } ;
  *     Verb     = ":" LITERAL ;
  */
-@Slf4j
 public class PathTemplate {
+
+    private static final Logger log = LogManager.getLogger();
 
     private final Set<String> boundVariables;
 

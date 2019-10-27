@@ -4,15 +4,18 @@ import com.github.jknack.handlebars.EscapingStrategy;
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
 import com.github.jknack.handlebars.io.TemplateLoader;
-import lombok.SneakyThrows;
 
+import java.io.IOException;
 import java.util.Map;
 
 public class Template {
-    @SneakyThrows
     public static String apply(String file, Map<String, Object> context) {
         TemplateLoader loader = new ClassPathTemplateLoader();
         Handlebars handlebars = new Handlebars(loader).prettyPrint(true).with(EscapingStrategy.NOOP);
-        return handlebars.compile(file).apply(context);
+        try {
+            return handlebars.compile(file).apply(context);
+        } catch (IOException e) {
+            throw new IllegalStateException("Template apply error. file name: " + file + ", context: " + context);
+        }
     }
 }

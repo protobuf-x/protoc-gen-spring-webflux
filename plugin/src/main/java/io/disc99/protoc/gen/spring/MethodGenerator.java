@@ -7,8 +7,9 @@ import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Type;
 import com.google.protobuf.TextFormat;
 import io.disc99.protoc.gen.spring.generator.*;
 import io.disc99.protoc.gen.spring.generator.ServiceMethodDescriptor.MethodType;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -20,8 +21,9 @@ import static java.util.stream.Collectors.toList;
 /**
  * A utility class to encapsulate the generation of HTTP methods for gRPC services.
  */
-@Slf4j
 public class MethodGenerator {
+
+    private static final Logger log = LogManager.getLogger();
 
     private final ServiceDescriptor serviceDescriptor;
 
