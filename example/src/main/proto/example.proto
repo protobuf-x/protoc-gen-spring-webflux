@@ -31,6 +31,14 @@ message DeleteEchoResponse {
     Echo echo = 1;
 }
 
+message SingleGetEchoRequest {
+    string id = 1;
+}
+
+message SingleGetEchoResponse {
+    Echo echo = 1;
+}
+
 message MultiGetEchoRequest {
     repeated int64 id = 1;
 }
@@ -82,6 +90,12 @@ service EchoService {
     rpc GetEchoByContent(GetEchoByContentRequest) returns (GetEchoResponse) {
         option (google.api.http) = {
             get: "/echo/contents/{content}"
+        };
+    }
+
+    rpc SingleGetEcho(SingleGetEchoRequest) returns (SingleGetEchoResponse) {
+        option (google.api.http) = {
+            get: "/echo_single"
         };
     }
 

@@ -43,6 +43,13 @@ public class GRpcServerTest {
     }
 
     @Test
+    void test_get_query_single() {
+        client.get().uri("/echo_single?id=1").exchange()
+                .expectStatus().isOk()
+                .expectBody().json("{\"echo\":{\"id\":1,\"content\":\"EchoService#singleGetEcho\"}}");
+    }
+
+    @Test
     void test_get_query() {
         client.get().uri("/echo?id=1").exchange()
                 .expectStatus().isOk()
