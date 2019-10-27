@@ -446,6 +446,8 @@ public class MethodGenerator {
 
     private String convertString(String value, String type) {
         switch (type) {
+            case "String":
+                return value;
             case "Boolean":
                 return "Boolean.valueOf(" + value + ")";
             case "Byte":

@@ -21,6 +21,15 @@ public class EchoService extends EchoServiceGrpc.EchoServiceImplBase {
     }
 
     @Override
+    public void getEchoByContent(GetEchoByContentRequest request, StreamObserver<GetEchoResponse> responseObserver) {
+        GetEchoResponse res = GetEchoResponse.newBuilder()
+                .setEcho(createEcho(2, "EchoService#getEchoByContent"))
+                .build();
+
+        ok(responseObserver, res);
+    }
+
+    @Override
     public void multiGetEcho(MultiGetEchoRequest request, StreamObserver<MultiGetEchoResponse> responseObserver) {
         MultiGetEchoResponse res = MultiGetEchoResponse.newBuilder()
                 .addAllEcho(request.getIdList().stream()

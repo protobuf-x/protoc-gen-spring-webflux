@@ -26,6 +26,14 @@ public class ProxyServerTest {
     }
 
     @Test
+    void test_get_path2() {
+        client.get().uri("/echo/contents/c").exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .json("{\"echo\":{\"content\":2,\"content\":\"EchoService#getEchoByContent\"}}");
+    }
+
+    @Test
     void exception_get_path_mismatch_type() {
         client.get().uri("/echo/x").exchange()
                 .expectStatus().isBadRequest()
