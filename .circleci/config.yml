@@ -13,7 +13,7 @@ jobs:
       - run: ./gradlew example:generateProto example:test
       - run: |
           if [ -n "$CIRCLE_TAG" ]; then
-            tar -zcvf protoc-gen-spring-webflux.tar.gz plugin/build/libs/protoc-gen-spring-webflux.jar
+            tar -C plugin/build/libs -zcvf protoc-gen-spring-webflux.tar.gz protoc-gen-spring-webflux.jar
             .circleci/ghr $CIRCLE_TAG protoc-gen-spring-webflux.tar.gz
           fi
 
