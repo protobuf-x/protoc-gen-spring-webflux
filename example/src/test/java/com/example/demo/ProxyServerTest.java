@@ -50,6 +50,13 @@ public class ProxyServerTest {
     }
 
     @Test
+    void test_get_query_enum() {
+        client.get().uri("/echo_enum?id=TYPE_2").exchange()
+                .expectStatus().isOk()
+                .expectBody().json("{\"echo\":{\"id\":99,\"content\":\"EchoService#enumGetEcho:TYPE_2\"}}");
+    }
+
+    @Test
     void test_get_query() {
         client.get().uri("/echo?id=1").exchange()
                 .expectStatus().isOk()

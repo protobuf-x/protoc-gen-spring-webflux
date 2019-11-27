@@ -50,6 +50,15 @@ public class EchoService extends EchoServiceGrpc.EchoServiceImplBase {
     }
 
     @Override
+    public void enumGetEcho(EnumGetEchoRequest request, StreamObserver<EnumGetEchoResponse> responseObserver) {
+        EnumGetEchoResponse res = EnumGetEchoResponse.newBuilder()
+                .setEcho(createEcho(99, "EchoService#enumGetEcho:" + request.getId()))
+                .build();
+
+        ok(responseObserver, res);
+    }
+
+    @Override
     public void deleteEcho(DeleteEchoRequest request, StreamObserver<DeleteEchoResponse> responseObserver) {
         DeleteEchoResponse res = DeleteEchoResponse.newBuilder()
                 .setEcho(createEcho(request.getId(), "EchoService#deleteEcho"))

@@ -39,6 +39,19 @@ message SingleGetEchoResponse {
     Echo echo = 1;
 }
 
+message EnumGetEchoRequest {
+    string id = 1;
+    Type type = 2;
+    enum Type {
+        TYPE_A = 0;
+        TYPE_B = 1;
+    }
+}
+
+message EnumGetEchoResponse {
+    Echo echo = 1;
+}
+
 message MultiGetEchoRequest {
     repeated int64 id = 1;
 }
@@ -96,6 +109,12 @@ service EchoService {
     rpc SingleGetEcho(SingleGetEchoRequest) returns (SingleGetEchoResponse) {
         option (google.api.http) = {
             get: "/echo_single"
+        };
+    }
+
+    rpc EnumGetEcho(EnumGetEchoRequest) returns (EnumGetEchoResponse) {
+        option (google.api.http) = {
+            get: "/echo_enum"
         };
     }
 

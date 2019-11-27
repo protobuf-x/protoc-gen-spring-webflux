@@ -481,7 +481,9 @@ public class MethodGenerator {
                 return "Float.valueOf(" + value + ")";
             case "Double":
                 return "Double.valueOf(" + value + ")";
+            default:
+                // Enum#valueOf
+                return type + ".valueOf(" + value + ")";
         }
-        throw new IllegalArgumentException("Dose not convert " + value + " to " + type);
     }
 }
