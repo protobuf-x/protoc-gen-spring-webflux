@@ -153,8 +153,13 @@ public class MethodGenerator {
                 setFieldBuilder.append(".addAll")
                         .append(lowerSnakeToUpperCamel(pathStack.removeFirst()))
                         .append("(")
-                        .append(variableForPath(path))
-                        .append(");");
+                        .append(variableForPath(path));
+                if (isMessageOrEnum(field)) {
+                    setFieldBuilder.append(".stream().map(")
+                        .append(field.getTypeName())
+                        .append("::toProto).collect(Collectors.toList())");
+                }
+                setFieldBuilder.append(");");
             } else {
                 setFieldBuilder.append(".set")
                         .append(lowerSnakeToUpperCamel(pathStack.removeFirst()))

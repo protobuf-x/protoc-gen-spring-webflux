@@ -52,7 +52,7 @@ public class EchoService extends EchoServiceGrpc.EchoServiceImplBase {
     @Override
     public void enumGetEcho(EnumGetEchoRequest request, StreamObserver<EnumGetEchoResponse> responseObserver) {
         EnumGetEchoResponse res = EnumGetEchoResponse.newBuilder()
-                .setEcho(createEcho(99, "EchoService#enumGetEcho:" + request.getId()))
+                .setEcho(createEcho(99, "EchoService#enumGetEcho:" + request.getType() + "," + request.getTypesList()))
                 .build();
 
         ok(responseObserver, res);

@@ -51,9 +51,9 @@ public class ProxyServerTest {
 
     @Test
     void test_get_query_enum() {
-        client.get().uri("/echo_enum?id=TYPE_2").exchange()
+        client.get().uri("/echo_enum?type=TYPE_B&types=TYPE_A&types=TYPE_B").exchange()
                 .expectStatus().isOk()
-                .expectBody().json("{\"echo\":{\"id\":99,\"content\":\"EchoService#enumGetEcho:TYPE_2\"}}");
+                .expectBody().json("{\"echo\":{\"id\":99,\"content\":\"EchoService#enumGetEcho:TYPE_B,[TYPE_A, TYPE_B]\"}}");
     }
 
     @Test

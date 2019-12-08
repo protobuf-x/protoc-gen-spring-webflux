@@ -42,6 +42,7 @@ message SingleGetEchoResponse {
 message EnumGetEchoRequest {
     string id = 1;
     Type type = 2;
+    repeated Type types = 3;
     enum Type {
         TYPE_A = 0;
         TYPE_B = 1;
