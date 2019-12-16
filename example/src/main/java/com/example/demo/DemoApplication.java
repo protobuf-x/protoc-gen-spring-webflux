@@ -68,7 +68,7 @@ public class DemoApplication {
     class ProxyServerConfig {
         @Bean
         EchoServiceProxy exampleProxy(ManagedChannel channel) {
-            EchoServiceGrpc.EchoServiceBlockingStub stub = EchoServiceGrpc.newBlockingStub(channel);
+            EchoServiceGrpc.EchoServiceStub stub = EchoServiceGrpc.newStub(channel);
             return new EchoServiceProxy(stub);
         }
 
@@ -84,12 +84,12 @@ public class DemoApplication {
     class Example2Config {
         @Bean
         FooServiceProxy fooServiceProxy(ManagedChannel channel) {
-            FooServiceGrpc.FooServiceBlockingStub stub = FooServiceGrpc.newBlockingStub(channel);
+            FooServiceGrpc.FooServiceStub stub = FooServiceGrpc.newStub(channel);
             return new FooServiceProxy(stub);
         }
         @Bean
         BarServiceProxy barServiceProxy(ManagedChannel channel) {
-            BarServiceGrpc.BarServiceBlockingStub stub = BarServiceGrpc.newBlockingStub(channel);
+            BarServiceGrpc.BarServiceStub stub = BarServiceGrpc.newStub(channel);
             return new BarServiceProxy(stub);
         }
         @Bean

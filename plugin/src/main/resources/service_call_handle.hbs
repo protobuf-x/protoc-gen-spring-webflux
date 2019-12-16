@@ -16,5 +16,5 @@ request -> {
             }
       };
       service.{{methodName}}(request, responseObserver);
-      return responseList.get(0);
+      return Mono.justOrEmpty(responseList.get(0));
 }

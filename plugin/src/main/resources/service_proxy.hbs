@@ -1,11 +1,12 @@
 public static class {{serviceName}}Proxy {
 
-    private {{package}}.{{serviceName}}Grpc.{{serviceName}}BlockingStub stub;
+    private {{package}}.{{serviceName}}Grpc.{{serviceName}}Stub stub;
 
-    public {{serviceName}}Proxy({{package}}.{{serviceName}}Grpc.{{serviceName}}BlockingStub stub) {
+    public {{serviceName}}Proxy({{package}}.{{serviceName}}Grpc.{{serviceName}}Stub stub) {
         this.stub = stub;
     }
 
+    @Nonnull
     public Mono<ServerResponse> proxyAll(ServerRequest serverRequest) {
 
         {{#methods}}

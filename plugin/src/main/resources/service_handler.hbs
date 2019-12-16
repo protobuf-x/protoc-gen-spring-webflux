@@ -6,6 +6,7 @@ public static class {{serviceName}}Handler {
         this.service = service;
     }
 
+    @Nonnull
     public Mono<ServerResponse> handleAll(ServerRequest serverRequest) {
 
         {{#methods}}
