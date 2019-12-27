@@ -1,4 +1,4 @@
-package io.disc99.protoc.gen.spring.generator;
+package io.protobufx.protoc.gen.spring.generator;
 
 import org.apache.commons.lang3.StringUtils;
 

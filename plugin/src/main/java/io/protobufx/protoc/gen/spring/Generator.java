@@ -1,9 +1,9 @@
-package io.disc99.protoc.gen.spring;
+package io.protobufx.protoc.gen.spring;
 
 
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.DescriptorProtos.DescriptorProto;
-import io.disc99.protoc.gen.spring.generator.*;
+import io.protobufx.protoc.gen.spring.generator.*;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static io.disc99.protoc.gen.spring.generator.Template.apply;
+import static io.protobufx.protoc.gen.spring.generator.Template.apply;
 import static java.util.stream.Collectors.toList;
 
 /**

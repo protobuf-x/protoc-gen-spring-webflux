@@ -1,12 +1,12 @@
-package io.disc99.protoc.gen.spring;
+package io.protobufx.protoc.gen.spring;
 
 import com.google.api.HttpRule;
 import com.google.common.base.CaseFormat;
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Label;
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Type;
 import com.google.protobuf.TextFormat;
-import io.disc99.protoc.gen.spring.generator.*;
-import io.disc99.protoc.gen.spring.generator.ServiceMethodDescriptor.MethodType;
+import io.protobufx.protoc.gen.spring.generator.*;
+import io.protobufx.protoc.gen.spring.generator.ServiceMethodDescriptor.MethodType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,7 +14,7 @@ import org.apache.logging.log4j.Logger;
 import javax.annotation.Nonnull;
 import java.util.*;
 
-import static io.disc99.protoc.gen.spring.generator.Template.apply;
+import static io.protobufx.protoc.gen.spring.generator.Template.apply;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 

@@ -1,4 +1,4 @@
-package io.disc99.protoc.gen.spring.generator;
+package io.protobufx.protoc.gen.spring.generator;
 
 import com.google.common.base.CaseFormat;
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto;

@@ -44,11 +44,11 @@ project('plugin') {
     }
 
     // Define the main class for the application
-    mainClassName = 'io.disc99.protoc.gen.spring.Main'
+    mainClassName = 'io.protobufx.protoc.gen.spring.Main'
 
     jar {
         manifest {
-            attributes "Main-Class" : "io.disc99.protoc.gen.spring.Main"
+            attributes "Main-Class" : "io.protobufx.protoc.gen.spring.Main"
         }
     }
     shadowJar {

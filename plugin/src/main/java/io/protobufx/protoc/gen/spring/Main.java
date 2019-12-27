@@ -1,4 +1,4 @@
-package io.disc99.protoc.gen.spring;
+package io.protobufx.protoc.gen.spring;
 
 public class Main {
 
