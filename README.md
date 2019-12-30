@@ -148,3 +148,4 @@ class ProxyServerConfg {
 * Custom patterns not supported.
 * Variables not supported.
 * Not supporting * and ** in path.
+* Request header metadata mapping.
