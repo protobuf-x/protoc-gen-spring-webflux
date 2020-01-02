@@ -4,7 +4,6 @@ import com.google.api.AnnotationsProto;
 import com.google.api.HttpRule;
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.DescriptorProtos.MethodDescriptorProto;
-import jdk.nashorn.internal.ir.annotations.Immutable;
 
 import javax.annotation.Nonnull;
 import java.util.Optional;
@@ -13,7 +12,6 @@ import java.util.Optional;
  * A wrapper around {@link MethodDescriptorProto}, which describes a single rpc method in
  * a service.
  */
-@Immutable
 public class ServiceMethodDescriptor {
 
     /**

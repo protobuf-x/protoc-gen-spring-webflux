@@ -9,22 +9,28 @@ buildscript {
         classpath "org.springframework.boot:spring-boot-gradle-plugin:2.1.8.RELEASE"
         classpath "io.spring.gradle:dependency-management-plugin:1.0.8.RELEASE"
         classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.8'
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
     }
 }
 
 allprojects {
+    group = 'io.protobufx'
+    version = System.getenv('CIRCLE_TAG') ?: System.getenv('CIRCLE_BRANCH') ?: 'local'
+
     repositories {
         mavenCentral()
         jcenter()
+        mavenLocal()
     }
 }
 
 project('plugin') {
-
     apply plugin: 'java'
     apply plugin: 'application'
     apply plugin: 'idea'
-    apply plugin: "com.github.johnrengelman.shadow"
+    apply plugin: 'com.github.johnrengelman.shadow'
+    apply plugin: 'maven-publish'
+    apply plugin: 'com.jfrog.bintray'
 
     sourceCompatibility = JavaVersion.VERSION_1_8
 
@@ -49,11 +55,89 @@ project('plugin') {
     jar {
         manifest {
             attributes "Main-Class" : "io.protobufx.protoc.gen.spring.Main"
+            attributes 'Multi-Release': 'true'
         }
     }
+
     shadowJar {
-        baseName = 'protoc-gen-spring-webflux'
+        archiveBaseName = 'protoc-gen-spring-webflux'
         classifier = null
+    }
+
+    task sourceJar(type: Jar) {
+        archiveBaseName = 'protoc-gen-spring-webflux'
+        from sourceSets.main.allSource
+        archiveClassifier = 'sources'
+    }
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        archiveBaseName = 'protoc-gen-spring-webflux'
+        archiveClassifier = 'javadoc'
+        from javadoc.destinationDir
+    }
+
+    task linuxExe(type: Jar) {
+        archiveBaseName = 'protoc-gen-spring-webflux'
+        archiveClassifier = 'linux-x86_64'
+        archiveExtension = 'exe'
+        dependsOn(shadowJar)
+        doLast {
+            File file = linuxExe.archivePath
+            file.delete()
+            file.createNewFile()
+            file.executable = true
+            file << "#!/bin/bash\nexec java -jar \$0\n"
+            file << shadowJar.archivePath.bytes
+        }
+    }
+
+    task osxExe(type: Jar) {
+        archiveBaseName = 'protoc-gen-spring-webflux'
+        archiveClassifier = 'osx-x86_64'
+        archiveExtension = 'exe'
+        dependsOn(shadowJar)
+        doLast {
+            File file = osxExe.archivePath
+            file.delete()
+            file.createNewFile()
+            file.executable = true
+            file << "#!/bin/bash\nexec java -jar \$0\n"
+            file << shadowJar.archivePath.bytes
+        }
+    }
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                artifactId 'protoc-gen-spring-webflux'
+                artifact shadowJar
+                artifact sourceJar
+                artifact javadocJar
+                artifact linuxExe
+                artifact osxExe
+            }
+        }
+    }
+
+    bintray {
+        user = System.getenv('BINTRAY_USER')
+        key = System.getenv('BINTRAY_KEY')
+        publications = ['mavenJava']
+        publish = true
+        pkg {
+            repo = 'maven'
+            userOrg = 'protocol-buffers-extensions'
+            name = 'protoc-gen-spring-webflux'
+            websiteUrl = 'https://github.com/protocol-buffers-extensions/protoc-gen-spring-webflux'
+            issueTrackerUrl = 'https://github.com/protocol-buffers-extensions/protoc-gen-spring-webflux/issues'
+            vcsUrl = 'https://github.com/protocol-buffers-extensions/protoc-gen-spring-webflux.git'
+            licenses = ['MIT']
+            publicDownloadNumbers = true
+            version {
+                name = project.version
+                vcsTag = project.version
+            }
+        }
     }
 }
 
@@ -81,7 +165,6 @@ project('example') {
         }
         testImplementation 'org.junit.jupiter:junit-jupiter-api'
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
-
     }
 
 
@@ -94,7 +177,7 @@ project('example') {
                 artifact = 'io.grpc:protoc-gen-grpc-java:1.21.0'
             }
             webflux {
-                path = '/usr/local/bin/protoc-gen-spring-webflux'
+                artifact = 'io.protobufx:protoc-gen-spring-webflux:local'
             }
         }
         generateProtoTasks {

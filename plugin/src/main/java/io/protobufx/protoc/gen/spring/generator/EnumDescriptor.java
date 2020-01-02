@@ -67,7 +67,7 @@ public class EnumDescriptor extends AbstractDescriptor {
     /**
      * Get the comment on this enum.
      *
-     * // This is super important <- this comment
+     * // This is super important :this comment
      * enum TestEnum {
      *    ...
      * }
@@ -83,10 +83,10 @@ public class EnumDescriptor extends AbstractDescriptor {
      * Get the comment on a particular value of the enum.
      *
      * enum TestEnum {
-     *     // You want this value <- this comment
+     *     // You want this value :this comment
      *     GOOD = 1;
      *
-     *     // You don't want this one <- or this one
+     *     // You don't want this one :or this one
      *     BAD = 2;
      * }
      *

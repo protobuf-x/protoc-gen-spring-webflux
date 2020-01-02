@@ -43,7 +43,7 @@ class FileDescriptorProcessingContext {
      * For example, if we have a file Test.proto:
      * <p>
      * syntax = "proto2";
-     * package testPkg; <-- This is the protoPkg
+     * package testPkg; // This is the protoPkg
      * <p>
      * option java_package = "com.vmturbo.testPkg";
      */
@@ -56,7 +56,7 @@ class FileDescriptorProcessingContext {
      * syntax = "proto2";
      * package testPkg;
      * <p>
-     * option java_package = "com.vmturbo.testPkg"; <-- This is the javaPkg
+     * option java_package = "com.vmturbo.testPkg"; // This is the javaPkg
      * <p>
      * If we there is no java_package option in the proto file
      * then this is equivalent to {@link FileDescriptorProcessingContext#protoPkg}.

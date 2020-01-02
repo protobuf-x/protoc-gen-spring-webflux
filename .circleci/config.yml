@@ -6,16 +6,7 @@ jobs:
 
     steps:
       - checkout
-      - run: ./gradlew plugin:shadowJar
-      - run: |
-          sudo cp plugin/protoc-gen-spring-webflux /usr/local/bin/
-          echo "export PROTOC_GEN=${PWD}/plugin/build/libs" >> $BASH_ENV
-      - run: ./gradlew example:generateProto example:test
-      - run: |
-          if [ -n "$CIRCLE_TAG" ]; then
-            tar -C plugin/build/libs -zcvf protoc-gen-spring-webflux.tar.gz protoc-gen-spring-webflux.jar
-            .circleci/ghr $CIRCLE_TAG protoc-gen-spring-webflux.tar.gz
-          fi
+      - run: ./gradlew plugin:bintrayUpload
 
 workflows:
   workflow:

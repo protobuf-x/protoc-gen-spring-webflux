@@ -142,6 +142,8 @@ public class MessageDescriptor extends AbstractDescriptor {
 
     /**
      * This should return true if this descriptor describes a MapEntry object.
+     *
+     * @return descriptor describes a MapEntry object.
      */
     public boolean isMapEntry() {
         return descriptorProto.hasOptions() && descriptorProto.getOptions().getMapEntry();

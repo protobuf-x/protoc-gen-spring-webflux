@@ -4,7 +4,6 @@ import com.google.common.base.CaseFormat;
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto;
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Label;
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Type;
-import jdk.nashorn.internal.ir.annotations.Immutable;
 
 import javax.annotation.Nonnull;
 import java.util.Map;
@@ -14,10 +13,9 @@ import java.util.Optional;
  * A wrapper around {@link FieldDescriptorProto}, which describes a single field in a message.
  * i.e:
  *    message TestMsg {
- *       optional int64 field = 1; <- Descriptor for this
+ *       optional int64 field = 1; // Descriptor for this
  *   }
  */
-@Immutable
 public class FieldDescriptor {
 
     /**
@@ -50,7 +48,9 @@ public class FieldDescriptor {
     private final boolean isProto3;
 
     /**
+     * @param context File context.
      * @param parentMessage The message within which the field is declared.
+     * @param fieldDescriptorProto file proto.
      * @param duplicateNameMap A map containing the names of fields that end up being duplicates
      *                         in the message the field is defined in. Names end up as duplicates
      *                         when the only thing that distinguishes them is the underscore.

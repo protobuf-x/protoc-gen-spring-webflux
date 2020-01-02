@@ -60,9 +60,9 @@ public abstract class AbstractDescriptor {
 
     /**
      * Get the unqualified name of this message. For example:
-     * message Msg { <-- Msg
-     *     message Msg2 { <-- Msg2
-     *         message Msg3 {} <-- Msg3
+     * message Msg { // Msg
+     *     message Msg2 { // Msg2
+     *         message Msg3 {} // Msg3
      *     }
      * }
      * @return The unqualified name of the message.
@@ -80,9 +80,9 @@ public abstract class AbstractDescriptor {
      * {@link AbstractDescriptor#getName}.
      * <p>
      * Otherwise, it's the path to the nested message. For example:
-     * message Msg { <-- Msg
-     *     message Msg2 { <-- Msg.Msg2
-     *         message Msg3 {} <-- Msg.Msg2.Msg3
+     * message Msg { // Msg
+     *     message Msg2 { // Msg.Msg2
+     *         message Msg3 {} // Msg.Msg2.Msg3
      *     }
      * }
      * @return The name of this message qualified within the overarching
