@@ -9,10 +9,6 @@ translates RESTful HTTP API into gRPC. This server is generated according to the
 Uses an external HTTP server separately from the gRPC server to convert Http requests to gRPC calls.
 ![image](https://user-images.githubusercontent.com/5003722/71714336-cbd1b100-2e50-11ea-84ea-791e6f8b3aee.png)
 
-## Installation
-
-* Download the latest binaries from JCenter [ ![Download](https://api.bintray.com/packages/protocol-buffers-extensions/maven/protoc-gen-spring-webflux/images/download.svg) ](https://bintray.com/protocol-buffers-extensions/maven/protoc-gen-spring-webflux/_latestVersion).
-
 ## Usage
 
 1. Define your [gRPC](https://grpc.io/docs/) service using protocol buffers.
