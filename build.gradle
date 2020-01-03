@@ -18,9 +18,9 @@ allprojects {
     version = System.getenv('CIRCLE_TAG') ?: System.getenv('CIRCLE_BRANCH') ?: 'local'
 
     repositories {
+        mavenLocal()
         mavenCentral()
         jcenter()
-        mavenLocal()
     }
 }
 
@@ -142,7 +142,6 @@ project('plugin') {
 }
 
 project('example') {
-
     apply plugin: 'java'
     apply plugin: "org.springframework.boot"
     apply plugin: "io.spring.dependency-management"
@@ -190,7 +189,6 @@ project('example') {
         }
     }
 
-    // for IDEA
     sourceSets {
         main {
             java {
