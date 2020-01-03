@@ -44,13 +44,6 @@ public class MethodGenerator {
     }
 
     @Nonnull
-    public String generateHandleCode() {
-        return getMethodTemplates().stream()
-                .map(MethodTemplate::renderHandle)
-                .collect(joining());
-    }
-
-    @Nonnull
     public String generateProxyCode() {
         return getMethodTemplates().stream()
                 .map(MethodTemplate::renderProxy)
@@ -348,12 +341,6 @@ public class MethodGenerator {
             this.context.remove(REST_METHOD_NAME);
             this.context.put(REST_METHOD_NAME, restMethodName);
             return this;
-        }
-
-        @Nonnull
-        public String renderHandle() {
-            context.put("serviceCall", apply("service_call_handle", context));
-            return apply("service_method", context);
         }
 
         @Nonnull

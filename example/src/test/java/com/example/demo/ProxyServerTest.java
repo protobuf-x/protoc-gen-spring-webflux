@@ -10,7 +10,6 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.web.reactive.function.BodyInserters.fromObject;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "grpc.port=6567")
-@ActiveProfiles("proxy-server")
 public class ProxyServerTest {
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")

@@ -1,6 +1,5 @@
 package com.example.demo;
 
-import com.example.demo.ExampleHandlers.EchoServiceHandler;
 import com.example.demo.ExampleHandlers.EchoServiceProxy;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -15,7 +14,6 @@ import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -43,23 +41,6 @@ public class DemoApplication {
     }
 
     @Configuration
-    @Profile("grpc-server")
-    class GRrpcServerConfig {
-        @Bean
-        EchoServiceHandler exampleHandler(EchoService service) {
-            return new EchoServiceHandler(service);
-        }
-
-        @Bean
-        RouterFunction<ServerResponse> routingGrpcServer(EchoServiceHandler handler) {
-            return RouterFunctions
-                    .route(path("/echo*/**"), handler::handleAll)
-                    .andRoute(path("/example.demo.EchoService/**"), handler::handleAll);
-        }
-    }
-
-    @Configuration
-    @Profile("proxy-server")
     class ProxyServerConfig {
         @Bean
         EchoServiceProxy exampleProxy(ManagedChannel channel) {
@@ -68,10 +49,10 @@ public class DemoApplication {
         }
 
         @Bean
-        RouterFunction<ServerResponse> routingProxyServer(EchoServiceProxy handler) {
+        RouterFunction<ServerResponse> routingProxyServer(EchoServiceProxy proxy) {
             return RouterFunctions
-                    .route(path("/echo*/**"), handler::proxyAll)
-                    .andRoute(path("/example.demo.EchoService/**"), handler::proxyAll);
+                    .route(path("/echo*/**"), proxy::proxyAll)
+                    .andRoute(path("/example.demo.EchoService/**"), proxy::proxyAll);
         }
     }
 
