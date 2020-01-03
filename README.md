@@ -4,7 +4,7 @@ gRPC to JSON proxy generator protoc plugin for Spring WebFlux inspired by [grpc-
 The protoc-gen-spring-webflux is a plugin of the Google protocol buffers compiler
 [protoc](https://github.com/protocolbuffers/protobuf).
 It reads protobuf service definitions and generates Spring WebFlux handler(for HTTP server) and proxy(for Proxy server) classes which
-translates RPC and RESTful HTTP API into gRPC.
+translates RESTful HTTP API into gRPC. This server is generated according to the [`google.api.http`](https://github.com/googleapis/googleapis/blob/master/google/api/http.proto#L46) annotations in your service definitions.
 
 * WebFlux HTTP server vs WebFlux Proxy server
   * WebFlux HTTP server: By mapping the http request directly to the gRPC service call, 
@@ -13,16 +13,9 @@ translates RPC and RESTful HTTP API into gRPC.
   Designed for use cases like gateway patterns.
 ![image](https://user-images.githubusercontent.com/5003722/64909510-216e3a80-d748-11e9-9d50-c1fd789961b6.png)
 
-
-* RPC style vs RESTful style
-  * RPC style: The default for protoc-gen-spring-webflux is RPC style.
-  It does not require [`google.api.http`](https://github.com/googleapis/googleapis/blob/master/google/api/http.proto#L46) and can be used with minimal definition.
-  Ideal when you don't need a RESTful API.
-  * RESTful style: RESTful API can be defined by using  [`google.api.http`](https://github.com/googleapis/googleapis/blob/master/google/api/http.proto#L46).
-  It can also be used to change the default RPC style.
-
 ## Installation
-* Download the latest binaries from [Release](https://github.com/protocol-buffers-extensions/protoc-gen-spring-webflux/releases).
+
+* Download the latest binaries from JCenter [ ![Download](https://api.bintray.com/packages/protocol-buffers-extensions/maven/protoc-gen-spring-webflux/images/download.svg) ](https://bintray.com/protocol-buffers-extensions/maven/protoc-gen-spring-webflux/_latestVersion).
 * Since the protoc plugin is a jar file, it is recommended to use it from an [external script](./plugin/protoc-gen-spring-webflux).
 
 ## Usage
@@ -45,7 +38,7 @@ service EchoService {
     }
 }
 ```
-2. (Optional) Add a [`google.api.http`](https://github.com/googleapis/googleapis/blob/master/google/api/http.proto#L46) annotation to your .proto file for REST style API.
+2. Add a [`google.api.http`](https://github.com/googleapis/googleapis/blob/master/google/api/http.proto#L46) annotation to your .proto file for HTTP API.
 
 ```diff
 syntax = "proto3";
@@ -58,14 +51,12 @@ package example.demo;
 service EchoService {
 
     rpc GetEcho(EchoRequest) returns (EchoResponse) {
-+        // If you use REST API style
 +        option (google.api.http) = {
 +            get: "/echo/{echo}"
 +        };
     }
 
     rpc CreateEcho(CreateEchoRequest) returns (CreateEchoResponse) {
-+        // If you use REST API style
 +        option (google.api.http) = {
 +              post: "/echo"
 +              body: "*"
@@ -76,20 +67,40 @@ service EchoService {
 
 3. Generate routing handler class using `protoc-gen-spring-webflux`
 
+When building in a Linux or OSX environment, build with the protoc plugin.
+
+```diff
+# build.gradle
+
+protobuf {
+    protoc {
+        // ...
+    }
+
+    plugins {
+        // ...
++       webflux {
++           artifact = 'io.protobufx:protoc-gen-spring-webflux:${PROTOC_GEN_SPRING_WEBFLUX_VERSION}'
++       }
+    }
+
+    generateProtoTasks {
+        all()*.plugins {
+            // ...
++           webflux {
++               option 'style=rest'
++           }
+        }
+    }
+}
+```
+
+At this time, since the protobuf plugin for windows is not supported, please execute the protoc command if you need to build on windows.
+
 ```bash
-# When default configuration, provide RPC style API.
-# In case of RPC style, API of grpc-web format(/{package}.{service}/{method}) is provided.
-# ex. POST http://hostname/example.demo.EchoService/GetEcho
 protoc -I. \
     --spring-webflux_out=. \
      example.proto
-
-# If you use google.api.http and REST API style.
-protoc -I. \
-    -I$APIPATH/googleapis \
-    --plugin=./protoc-gen-spring-webflux \
-    --spring-webflux_out=style=rest:. \
-     example.proto     
 ```
 
 4-a. Write an routing of the Spring WebFlux `HTTP` server.
