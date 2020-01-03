@@ -149,3 +149,9 @@ class ProxyServerConfg {
 * Variables not supported.
 * Not supporting * and ** in path.
 * Request header metadata mapping.
+
+
+## License
+(The MIT License)
+
+Copyright (c) 2020 @disc99
