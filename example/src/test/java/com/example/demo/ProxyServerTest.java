@@ -175,18 +175,4 @@ public class ProxyServerTest {
     void test_header() {
         // TODO
     }
-
-    @Test
-    void test_post_rpc_with_multiple_service_definition() {
-        client.post()
-                .uri("/example.demo2.FooService/GetFoo").contentType(APPLICATION_JSON)
-                .body(fromObject("{\"id\":1}")).exchange()
-                .expectStatus().isOk()
-                .expectBody().json("{\"id\":1,\"content\":\"FooService#getFoo\"}");
-        client.post()
-                .uri("/example.demo2.BarService/GetBar").contentType(APPLICATION_JSON)
-                .body(fromObject("{\"id\":1}")).exchange()
-                .expectStatus().isOk()
-                .expectBody().json("{\"id\":1,\"content\":\"BarService#getBar\"}");
-    }
 }

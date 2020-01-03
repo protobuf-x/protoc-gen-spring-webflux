@@ -66,7 +66,7 @@ public class MethodGenerator {
 
     private List<MethodTemplate> getMethodTemplates() {
         if (!serviceMethodDescriptor.getHttpRule().isPresent()) {
-            return Collections.singletonList(new MethodTemplate(SpringMethodType.POST));
+            return Collections.emptyList();
         }
 
         final HttpRule topLevelRule = serviceMethodDescriptor.getHttpRule().get();
@@ -76,8 +76,7 @@ public class MethodGenerator {
         // No recursion allowed - additional bindings will not contain rules that contain
         // additional bindings!
         for (int i = 0; i < topLevelRule.getAdditionalBindingsCount(); ++i) {
-            allMethodsContexts.add(
-                    generateMethodFromHttpRule(topLevelRule.getAdditionalBindings(i), Optional.of(i)));
+            allMethodsContexts.add(generateMethodFromHttpRule(topLevelRule.getAdditionalBindings(i), Optional.of(i)));
         }
         return allMethodsContexts;
     }
@@ -316,9 +315,6 @@ public class MethodGenerator {
             context.put("methodProto", serviceMethodDescriptor.getName());
             context.put("methodType", springMethodType.getType());
             context.put("serviceName", serviceDescriptor.getName());
-            context.put("isRest", parameters.hasParameter("style")
-                    && parameters.getParameterValue("style").equals("rest")
-                    && serviceMethodDescriptor.getHttpRule().isPresent());
             // Defaults.
             context.put(IS_REQUEST_JSON, true);
             context.put(PATH_NAME, "/" + serviceDescriptor.getName() + "/" + StringUtils.uncapitalize(serviceMethodDescriptor.getName()));

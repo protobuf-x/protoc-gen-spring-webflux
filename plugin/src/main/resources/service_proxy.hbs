@@ -10,15 +10,9 @@ public static class {{serviceName}}Proxy {
     public Mono<ServerResponse> proxyAll(ServerRequest serverRequest) {
 
         {{#methods}}
-            {{#if isRest}}
-                if (RequestPredicates.method({{methodType}}).and(RequestPredicates.path("{{path}}")).test(serverRequest)) {
-                    return {{restMethodName}}(serverRequest);
-                }
-            {{else}}
-                if (RequestPredicates.method(HttpMethod.POST).and(RequestPredicates.path("/{{packageProto}}.{{serviceName}}/{{methodProto}}")).test(serverRequest)) {
-                    return {{restMethodName}}(serverRequest);
-                }
-            {{/if}}
+            if (RequestPredicates.method({{methodType}}).and(RequestPredicates.path("{{path}}")).test(serverRequest)) {
+                return {{restMethodName}}(serverRequest);
+            }
         {{/methods}}
 
         throw new ResponseStatusException(HttpStatus.NOT_FOUND);

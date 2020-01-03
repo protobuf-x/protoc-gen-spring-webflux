@@ -2,11 +2,6 @@ package com.example.demo;
 
 import com.example.demo.ExampleHandlers.EchoServiceHandler;
 import com.example.demo.ExampleHandlers.EchoServiceProxy;
-import com.example.demo2.BarServiceGrpc;
-import com.example.demo2.Example2Handlers;
-import com.example.demo2.Example2Handlers.BarServiceProxy;
-import com.example.demo2.Example2Handlers.FooServiceProxy;
-import com.example.demo2.FooServiceGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
@@ -77,26 +72,6 @@ public class DemoApplication {
             return RouterFunctions
                     .route(path("/echo*/**"), handler::proxyAll)
                     .andRoute(path("/example.demo.EchoService/**"), handler::proxyAll);
-        }
-    }
-
-    @Configuration
-    class Example2Config {
-        @Bean
-        FooServiceProxy fooServiceProxy(ManagedChannel channel) {
-            FooServiceGrpc.FooServiceStub stub = FooServiceGrpc.newStub(channel);
-            return new FooServiceProxy(stub);
-        }
-        @Bean
-        BarServiceProxy barServiceProxy(ManagedChannel channel) {
-            BarServiceGrpc.BarServiceStub stub = BarServiceGrpc.newStub(channel);
-            return new BarServiceProxy(stub);
-        }
-        @Bean
-        RouterFunction<ServerResponse> example2Routing(FooServiceProxy fooServiceProxy, BarServiceProxy barServiceProxy) {
-            return RouterFunctions
-                    .route(path("/example.demo2.FooService/**"), fooServiceProxy::proxyAll)
-                    .andRoute(path("/example.demo2.BarService/**"), barServiceProxy::proxyAll);
         }
     }
 
