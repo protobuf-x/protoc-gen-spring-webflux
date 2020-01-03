@@ -6,12 +6,14 @@ import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.DescriptorProtos.MethodDescriptorProto;
 
 import javax.annotation.Nonnull;
+import javax.annotation.concurrent.Immutable;
 import java.util.Optional;
 
 /**
  * A wrapper around {@link MethodDescriptorProto}, which describes a single rpc method in
  * a service.
  */
+@Immutable
 public class ServiceMethodDescriptor {
 
     /**

@@ -6,6 +6,7 @@ import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Label;
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Type;
 
 import javax.annotation.Nonnull;
+import javax.annotation.concurrent.Immutable;
 import java.util.Map;
 import java.util.Optional;
 
@@ -16,6 +17,7 @@ import java.util.Optional;
  *       optional int64 field = 1; // Descriptor for this
  *   }
  */
+@Immutable
 public class FieldDescriptor {
 
     /**
