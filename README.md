@@ -12,7 +12,6 @@ Uses an external HTTP server separately from the gRPC server to convert Http req
 ## Installation
 
 * Download the latest binaries from JCenter [ ![Download](https://api.bintray.com/packages/protocol-buffers-extensions/maven/protoc-gen-spring-webflux/images/download.svg) ](https://bintray.com/protocol-buffers-extensions/maven/protoc-gen-spring-webflux/_latestVersion).
-* Since the protoc plugin is a jar file, it is recommended to use it from an [external script](./plugin/protoc-gen-spring-webflux).
 
 ## Usage
 
@@ -63,7 +62,9 @@ service EchoService {
 
 3. Generate routing handler class using `protoc-gen-spring-webflux`
 
-When building in a Linux or OSX environment, build with the protoc plugin.
+3-a. Use protoc plugin on Linux or OSX
+
+* When building in a Linux or OSX environment, build with the protoc plugin.
 
 ```diff
 # build.gradle
@@ -89,13 +90,17 @@ protobuf {
 }
 ```
 
-At this time, since the protobuf plugin for windows is not supported, please execute the protoc command if you need to build on windows.
+3-b. Use protoc command
+
+* Since the protobuf plugin for windows is not supported, please execute the protoc command if you need to build on windows.
 
 ```bash
 protoc -I. \
     --spring-webflux_out=. \
      example.proto
 ```
+
+Download the latest binaries from JCenter [ ![Download](https://api.bintray.com/packages/protocol-buffers-extensions/maven/protoc-gen-spring-webflux/images/download.svg) ](https://bintray.com/protocol-buffers-extensions/maven/protoc-gen-spring-webflux/_latestVersion).
 
 4. Write an routing of the Spring WebFlux `Proxy` server.
 
