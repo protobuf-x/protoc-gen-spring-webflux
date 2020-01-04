@@ -1,22 +1,5 @@
-request -> Mono.from(new Publisher<{{resultProto}}>() {
-    @Override
-    public void subscribe(Subscriber<? super {{resultProto}}> subscriber) {
-        subscriber.onSubscribe(new BaseSubscriber<{{resultProto}}>() {});
-        stub.{{methodName}}(request, new StreamObserver<{{resultProto}}>() {
-            @Override
-            public void onNext({{resultProto}} value) {
-                subscriber.onNext(value);
-            }
-
-            @Override
-            public void onError(Throwable t) {
-                subscriber.onError(t);
-            }
-
-            @Override
-            public void onCompleted() {
-                subscriber.onComplete();
-            }
-        });
-    }
-})
+request -> {
+    ReactiveStreamObserver<{{resultProto}}> observer = new ReactiveStreamObserver<>();
+    stub.{{methodName}}(request, observer);
+    return Mono.from(observer);
+}

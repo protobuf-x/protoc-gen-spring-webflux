@@ -11,4 +11,29 @@ public class {{outerClassName}} {
     {{#messageCode}}{{.}}{{/messageCode}}
     {{#enumCode}}{{.}}{{/enumCode}}
     {{#serviceCode}}{{.}}{{/serviceCode}}
+
+    static class ReactiveStreamObserver<T> implements StreamObserver<T>, Publisher<T> {
+        Subscriber<? super T> subscriber;
+
+        @Override
+        public void onNext(T value) {
+            subscriber.onNext(value);
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            subscriber.onError(t);
+        }
+
+        @Override
+        public void onCompleted() {
+            subscriber.onComplete();
+        }
+
+        @Override
+        public void subscribe(Subscriber<? super T> s) {
+            this.subscriber = s;
+            this.subscriber.onSubscribe(new BaseSubscriber<T>() {});
+        }
+    }
 }
