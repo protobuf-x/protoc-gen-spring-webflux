@@ -31,16 +31,13 @@ public class MethodGenerator {
 
     private final String responseWrapper;
 
-    private final Parameters parameters;
 
     public MethodGenerator(@Nonnull final ServiceDescriptor serviceDescriptor,
                            @Nonnull final ServiceMethodDescriptor serviceMethodDescriptor,
-                           @Nonnull final String responseWrapper,
-                           @Nonnull final Parameters parameters) {
+                           @Nonnull final String responseWrapper) {
         this.serviceDescriptor = Objects.requireNonNull(serviceDescriptor);
         this.serviceMethodDescriptor = Objects.requireNonNull(serviceMethodDescriptor);
         this.responseWrapper = Objects.requireNonNull(responseWrapper);
-        this.parameters = Objects.requireNonNull(parameters);
     }
 
     @Nonnull

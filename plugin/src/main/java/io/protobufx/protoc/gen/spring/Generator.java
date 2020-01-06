@@ -63,13 +63,13 @@ class Generator extends ProtocPluginCodeGenerator {
         context.put("packageProto", serviceDescriptor.getProtoPkgName());
         context.put("methods", serviceDescriptor.getMethodDescriptors().stream()
                 .map(serviceMethodDescriptor ->
-                        new MethodGenerator(serviceDescriptor, serviceMethodDescriptor, responseWrapper, parameters).getMethodContexts())
+                        new MethodGenerator(serviceDescriptor, serviceMethodDescriptor, responseWrapper).getMethodContexts())
                 .flatMap(Collection::stream)
                 .collect(toList()));
 
         context.put("proxyMethodDefinitions", serviceDescriptor.getMethodDescriptors().stream()
                 .map(serviceMethodDescriptor ->
-                        new MethodGenerator(serviceDescriptor, serviceMethodDescriptor, responseWrapper, parameters).generateProxyCode())
+                        new MethodGenerator(serviceDescriptor, serviceMethodDescriptor, responseWrapper).generateProxyCode())
                 .collect(toList()));
         String serviceProxy = apply("service_proxy", context);
 
