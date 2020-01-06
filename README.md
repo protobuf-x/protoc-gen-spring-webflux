@@ -116,12 +116,13 @@ class ProxyServerConfg {
 
     @Bean
     RouterFunction<ServerResponse> routing(ExampleHandlers.EchoServiceProxy handler) {
-        return RouterFunctions
-            // Use the proxyAll method to route everything to the generated Proxy.
-            .route(path("/echo*/**"), handler::proxyAll)
-            // Handler can be routed individually by using the generated method.
-            .andRoute(GET("/echo/{id}"), handler::getEcho)
-            .andRoute(POST("/echo"), handler::createEcho);
+        return RouterFunctions.route()
+                // Use the proxyAll method to route everything to the generated Proxy.
+                .add(proxy.proxyAllRouterFunction())
+                // Handler can be routed individually by using the generated method.
+                .GET("/echo/{id}", handler::getEcho)
+                .POST("/echo", handler::createEcho)
+                .build();
     }
 }
 ```
@@ -131,7 +132,6 @@ class ProxyServerConfg {
 * Custom patterns not supported.
 * Variables not supported.
 * Not supporting * and ** in path.
-* Request header metadata mapping.
 
 
 ## License
