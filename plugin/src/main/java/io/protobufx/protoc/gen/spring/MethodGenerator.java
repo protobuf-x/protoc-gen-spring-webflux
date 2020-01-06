@@ -304,6 +304,7 @@ public class MethodGenerator {
             context.put("methodName", StringUtils.uncapitalize(serviceMethodDescriptor.getName()));
             context.put("methodProto", serviceMethodDescriptor.getName());
             context.put("methodType", springMethodType.getType());
+            context.put("methodTypeName", springMethodType.getTypeName());
             context.put("serviceName", serviceDescriptor.getName());
             // Defaults.
             context.put(IS_REQUEST_JSON, true);
@@ -445,6 +446,11 @@ public class MethodGenerator {
         @Nonnull
         public String getType() {
             return springMethodType;
+        }
+
+        @Nonnull
+        public String getTypeName() {
+            return name();
         }
     }
 

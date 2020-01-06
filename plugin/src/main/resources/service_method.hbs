@@ -10,3 +10,8 @@ public Mono<ServerResponse> {{restMethodName}}(ServerRequest serverRequest) {
         throw Exceptions.propagate(e);
     }
 }
+
+@Nonnull
+public RouterFunction<ServerResponse> {{restMethodName}}RouterFunction() {
+    return RouterFunctions.route().{{methodTypeName}}("{{path}}", this::{{restMethodName}}).build();
+}

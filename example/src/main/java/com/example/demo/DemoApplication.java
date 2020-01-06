@@ -24,8 +24,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
-import static org.springframework.web.reactive.function.server.RequestPredicates.path;
-
 @SpringBootApplication
 public class DemoApplication {
 
@@ -50,9 +48,10 @@ public class DemoApplication {
 
         @Bean
         RouterFunction<ServerResponse> routingProxyServer(EchoServiceProxy proxy) {
-            return RouterFunctions
-                    .route(path("/echo*/**"), proxy::proxyAll)
-                    .andRoute(path("/example.demo.EchoService/**"), proxy::proxyAll);
+            return RouterFunctions.route()
+                    .add(proxy.proxyAllRouterFunction())
+                    .GET("/v1/EchoService/GetEcho", proxy::getEcho)
+                    .build();
         }
     }
 
