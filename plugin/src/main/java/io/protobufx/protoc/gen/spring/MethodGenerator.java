@@ -41,9 +41,9 @@ public class MethodGenerator {
     }
 
     @Nonnull
-    public String generateProxyCode() {
+    public String generateHandleCode() {
         return getMethodTemplates().stream()
-                .map(MethodTemplate::renderProxy)
+                .map(MethodTemplate::renderHandleCode)
                 .collect(joining());
     }
 
@@ -342,8 +342,8 @@ public class MethodGenerator {
         }
 
         @Nonnull
-        public String renderProxy() {
-            context.put("serviceCall", apply("service_call_proxy", context));
+        public String renderHandleCode() {
+            context.put("serviceCall", apply("service_call_handler", context));
             return apply("service_method", context);
         }
 

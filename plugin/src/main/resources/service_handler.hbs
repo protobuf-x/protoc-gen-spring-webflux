@@ -1,13 +1,13 @@
-public static class {{serviceName}}Proxy {
+public static class {{serviceName}}Handler {
 
     private {{package}}.{{serviceName}}Grpc.{{serviceName}}Stub stub;
 
-    public {{serviceName}}Proxy({{package}}.{{serviceName}}Grpc.{{serviceName}}Stub stub) {
+    public {{serviceName}}Handler({{package}}.{{serviceName}}Grpc.{{serviceName}}Stub stub) {
         this.stub = stub;
     }
 
     @Nonnull
-    public Mono<ServerResponse> proxyAll(ServerRequest serverRequest) {
+    public Mono<ServerResponse> handleAll(ServerRequest serverRequest) {
 
         {{#methods}}
             if (RequestPredicates.method({{methodType}}).and(RequestPredicates.path("{{path}}")).test(serverRequest)) {
@@ -19,7 +19,7 @@ public static class {{serviceName}}Proxy {
     }
 
     @Nonnull
-    public RouterFunction<ServerResponse> proxyAllRouterFunction() {
+    public RouterFunction<ServerResponse> handleAllRouterFunction() {
         return RouterFunctions.route()
             {{#methods}}
                 .{{methodTypeName}}("{{path}}", this::{{restMethodName}})
@@ -27,5 +27,5 @@ public static class {{serviceName}}Proxy {
             .build();
     }
 
-    {{#proxyMethodDefinitions}}{{.}}{{/proxyMethodDefinitions}}
+    {{#handleMethodDefinitions}}{{.}}{{/handleMethodDefinitions}}
 }

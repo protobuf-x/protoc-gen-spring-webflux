@@ -1,6 +1,5 @@
 package com.example.demo;
 
-import com.example.demo.ExampleHandlers.EchoServiceProxy;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
@@ -39,18 +38,18 @@ public class DemoApplication {
     }
 
     @Configuration
-    class ProxyServerConfig {
+    class HandlerServerConfig {
         @Bean
-        EchoServiceProxy exampleProxy(ManagedChannel channel) {
+        ExampleHandlers.EchoServiceHandler example(ManagedChannel channel) {
             EchoServiceGrpc.EchoServiceStub stub = EchoServiceGrpc.newStub(channel);
-            return new EchoServiceProxy(stub);
+            return new ExampleHandlers.EchoServiceHandler(stub);
         }
 
         @Bean
-        RouterFunction<ServerResponse> routingProxyServer(EchoServiceProxy proxy) {
+        RouterFunction<ServerResponse> routingServer(ExampleHandlers.EchoServiceHandler handler) {
             return RouterFunctions.route()
-                    .add(proxy.proxyAllRouterFunction())
-                    .GET("/v1/EchoService/GetEcho", proxy::getEcho)
+                    .add(handler.handleAllRouterFunction())
+                    .GET("/v1/EchoService/GetEcho", handler::getEcho)
                     .build();
         }
     }
