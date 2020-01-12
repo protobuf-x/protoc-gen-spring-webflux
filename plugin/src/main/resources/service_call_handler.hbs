@@ -1,5 +1,0 @@
-request -> {
-    ReactiveStreamObserver<{{resultProto}}> observer = new ReactiveStreamObserver<>();
-    stub.{{methodName}}(request, observer);
-    return Mono.from(observer);
-}

@@ -7,24 +7,16 @@ public static class {{serviceName}}Handler {
     }
 
     @Nonnull
-    public Mono<ServerResponse> handleAll(ServerRequest serverRequest) {
-
-        {{#methods}}
-            if (RequestPredicates.method({{methodType}}).and(RequestPredicates.path("{{path}}")).test(serverRequest)) {
-                return {{restMethodName}}(serverRequest);
-            }
-        {{/methods}}
-
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+    public RouterFunction<ServerResponse> handleAllRouterFunction() {
+      return handleAllRouterFunctionBuilder().build();
     }
 
     @Nonnull
-    public RouterFunction<ServerResponse> handleAllRouterFunction() {
+    public RouterFunctions.Builder handleAllRouterFunctionBuilder() {
         return RouterFunctions.route()
             {{#methods}}
                 .{{methodTypeName}}("{{path}}", this::{{restMethodName}})
-            {{/methods}}
-            .build();
+            {{/methods}};
     }
 
     {{#handleMethodDefinitions}}{{.}}{{/handleMethodDefinitions}}

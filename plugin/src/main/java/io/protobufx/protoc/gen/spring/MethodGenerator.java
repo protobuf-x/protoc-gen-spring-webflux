@@ -62,41 +62,131 @@ public class MethodGenerator {
 
         final HttpRule topLevelRule = serviceMethodDescriptor.getHttpRule().get();
         final List<MethodTemplate> allMethodsContexts = new ArrayList<>();
-        allMethodsContexts.add(generateMethodFromHttpRule(topLevelRule, null));
+        generateMethodFromHttpRule(topLevelRule, null).ifPresent(allMethodsContexts::add);
 
         // No recursion allowed - additional bindings will not contain rules that contain
         // additional bindings!
         for (int i = 0; i < topLevelRule.getAdditionalBindingsCount(); ++i) {
-            allMethodsContexts.add(generateMethodFromHttpRule(topLevelRule.getAdditionalBindings(i), i));
+            generateMethodFromHttpRule(topLevelRule.getAdditionalBindings(i), i)
+                    .ifPresent(allMethodsContexts::add);
         }
         return allMethodsContexts;
     }
 
     @Nonnull
-    private MethodTemplate generateMethodFromHttpRule(@Nonnull final HttpRule httpRule,
+    private Optional<MethodTemplate> generateMethodFromHttpRule(@Nonnull final HttpRule httpRule,
                                                       @Nullable final Integer bindingIndex) {
         switch (httpRule.getPatternCase()) {
             case GET:
-                return generateMethodCode(httpRule.getGet(), null,
-                        SpringMethodType.GET, bindingIndex);
+                return Optional.of(generateMethodCode(httpRule.getGet(), null,
+                        httpRule.getPatternCase(), bindingIndex));
             case PUT:
-                return generateMethodCode(httpRule.getPut(), httpRule.getBody().isEmpty() ? null : httpRule.getBody(),
-                        SpringMethodType.PUT, bindingIndex);
+                return Optional.of(generateMethodCode(httpRule.getPut(), httpRule.getBody().isEmpty() ? null : httpRule.getBody(),
+                        httpRule.getPatternCase(), bindingIndex));
             case POST:
-                return generateMethodCode(httpRule.getPost(), httpRule.getBody().isEmpty() ? null : httpRule.getBody(),
-                        SpringMethodType.POST, bindingIndex);
+                return Optional.of(generateMethodCode(httpRule.getPost(), httpRule.getBody().isEmpty() ? null : httpRule.getBody(),
+                        httpRule.getPatternCase(), bindingIndex));
             case DELETE:
-                return generateMethodCode(httpRule.getDelete(), httpRule.getBody().isEmpty() ? null : httpRule.getBody(),
-                        SpringMethodType.DELETE, bindingIndex);
+                return Optional.of(generateMethodCode(httpRule.getDelete(), httpRule.getBody().isEmpty() ? null : httpRule.getBody(),
+                        httpRule.getPatternCase(), bindingIndex));
             case PATCH:
-                return generateMethodCode(httpRule.getPatch(), httpRule.getBody().isEmpty() ? null : httpRule.getBody(),
-                        SpringMethodType.PATCH, bindingIndex);
+                return Optional.of(generateMethodCode(httpRule.getPatch(), httpRule.getBody().isEmpty() ? null : httpRule.getBody(),
+                        httpRule.getPatternCase(), bindingIndex));
             case CUSTOM:
                 log.error("Custom HTTP Rule Pattern Not Supported!\n {}",
                         TextFormat.printToString(httpRule.getCustom()));
-                return new MethodTemplate(SpringMethodType.POST);
+                return Optional.empty();
         }
-        return new MethodTemplate(SpringMethodType.POST);
+        return Optional.empty();
+    }
+
+    @Nonnull
+    private MethodTemplate generateMethodCode(@Nonnull final String pattern,
+                                              @Nullable final String bodyPattern,
+                                              @Nonnull final HttpRule.PatternCase httpMethod,
+                                              @Nullable final Integer bindingIndex) {
+        final PathTemplate template = new PathTemplate(pattern);
+        final MessageDescriptor inputDescriptor = serviceMethodDescriptor.getInputMessage();
+        final Set<String> boundVariables = template.getBoundVariables();
+
+        final MethodGenerationFieldVisitor fieldVisitor = new MethodGenerationFieldVisitor(boundVariables);
+
+        // We visit all fields. There are two possibilities:
+        // 1) Field is "bound" to the path.
+        // 2) Field is not bound. It may become a query parameter, or be in the request body.
+        inputDescriptor.visitFields(fieldVisitor);
+
+        final List<String> requestToInputSteps = new ArrayList<>();
+
+        if (bodyPattern != null) {
+            final String body = StringUtils.strip(bodyPattern);
+            if (body.equals("*")) {
+                requestToInputSteps.add(".flatMap(inputBuilder -> serverRequest.bodyToMono("
+                        + getBodyType(true)
+                        + ".class).map(inputDto -> inputBuilder.mergeFrom(inputDto.toProto())))");
+            } else {
+                if (body.contains(".")) {
+                    throw new IllegalArgumentException("Invalid body: " + body + ". Body must refer to a top-level field.");
+                }
+
+                // Must be a field of the top-level request object.
+                final FieldDescriptor bodyField = inputDescriptor.getFieldDescriptors().stream()
+                        .filter(fieldDescriptor -> fieldDescriptor.getProto().getName().equals(body))
+                        .findFirst().orElseThrow(() -> new IllegalArgumentException("Body field: "
+                                + body + " does not exist. Valid fields are: " +
+                                inputDescriptor.getFieldDescriptors().stream()
+                                        .map(FieldDescriptor::getName)
+                                        .collect(joining(", "))));
+                if (bodyField.isList() || bodyField.isMapField()) {
+                    throw new IllegalArgumentException("Invalid body: " + body +
+                            ". Body must refer to a non-repeated/map field.");
+                }
+
+                requestToInputSteps.add(".flatMap(inputBuilder -> serverRequest.bodyToMono("
+                        + bodyField.getType()
+                        + ".class).filter(Objects::nonNull).map("
+                        + variableForPath(body)
+                        + " -> {"
+                        + generateVariableSetter(body, bodyField, false)
+                        + "}))");
+            }
+        } else {
+            fieldVisitor.getQueryParamFields().forEach((path, type) -> {
+                Map<String, Object> context = new HashMap<>();
+                context.put("convert", convertString("p", type.getTypeName()));
+                context.put("type", type.getTypeName());
+                context.put("variable", variableForPath(path));
+                context.put("variableSetter", generateVariableSetter(path, type, true));
+                requestToInputSteps.add(apply("flatmap_variable_query_parameter", context));
+            });
+        }
+
+        fieldVisitor.getPathFields().forEach((path, type) -> {
+            Map<String, Object> context = new HashMap<>();
+            context.put("convert", convertString("serverRequest.pathVariable(\"" + variableForPath(path) + "\")", type.getType()));
+            context.put("type", type.getType());
+            context.put("variable", variableForPath(path));
+            context.put("variableSetter", generateVariableSetter(path, type, false));
+            requestToInputSteps.add(apply("flatmap_variable_path", context));
+        });
+
+        final StringBuilder requestToInput = new StringBuilder()
+                .append("Mono.just(")
+                .append(inputDescriptor.getQualifiedOriginalName())
+                .append(".newBuilder())");
+
+        requestToInputSteps.forEach(requestToInput::append);
+
+        requestToInput.append(".map(")
+                .append(inputDescriptor.getQualifiedOriginalName())
+                .append(".Builder::build)");
+
+        String index = bindingIndex == null ? "" : Integer.toString(bindingIndex);
+        return new MethodTemplate(httpMethod)
+                .setPath(template.getQueryPath())
+                .setIsRequestJson(bodyPattern != null)
+                .setRequestToInput(requestToInput.toString())
+                .setRestMethodName(StringUtils.uncapitalize(serviceMethodDescriptor.getName()) + index);
     }
 
     @Nonnull
@@ -176,110 +266,11 @@ public class MethodGenerator {
     }
 
 
-    @Nonnull
-    private MethodTemplate generateMethodCode(@Nonnull final String pattern,
-                                              @Nullable final String bodyPattern,
-                                              @Nonnull final SpringMethodType methodType,
-                                              @Nullable final Integer bindingIndex) {
-        final PathTemplate template = new PathTemplate(pattern);
-        final MessageDescriptor inputDescriptor = serviceMethodDescriptor.getInputMessage();
-        final Set<String> boundVariables = template.getBoundVariables();
-
-        final MethodGenerationFieldVisitor fieldVisitor = new MethodGenerationFieldVisitor(boundVariables);
-
-        // We visit all fields. There are two possibilities:
-        // 1) Field is "bound" to the path.
-        // 2) Field is not bound. It may become a query parameter, or be in the request body.
-        inputDescriptor.visitFields(fieldVisitor);
-
-        final List<String> requestToInputSteps = new ArrayList<>();
-
-        if (bodyPattern != null) {
-            final String body = StringUtils.strip(bodyPattern);
-            if (body.equals("*")) {
-                requestToInputSteps.add(".flatMap(inputBuilder -> serverRequest.bodyToMono("
-                        + getBodyType(true)
-                        + ".class).map(inputDto -> inputBuilder.mergeFrom(inputDto.toProto())))");
-            } else {
-                if (body.contains(".")) {
-                    throw new IllegalArgumentException("Invalid body: " + body + ". Body must refer to a top-level field.");
-                }
-
-                // Must be a field of the top-level request object.
-                final FieldDescriptor bodyField = inputDescriptor.getFieldDescriptors().stream()
-                        .filter(fieldDescriptor -> fieldDescriptor.getProto().getName().equals(body))
-                        .findFirst().orElseThrow(() -> new IllegalArgumentException("Body field: "
-                                + body + " does not exist. Valid fields are: " +
-                                inputDescriptor.getFieldDescriptors().stream()
-                                        .map(FieldDescriptor::getName)
-                                        .collect(joining(", "))));
-                if (bodyField.isList() || bodyField.isMapField()) {
-                    throw new IllegalArgumentException("Invalid body: " + body +
-                            ". Body must refer to a non-repeated/map field.");
-                }
-
-                requestToInputSteps.add(".flatMap(inputBuilder -> serverRequest.bodyToMono("
-                        + bodyField.getType()
-                        + ".class).filter(Objects::nonNull).map("
-                        + variableForPath(body)
-                        + " -> {"
-                        + generateVariableSetter(body, bodyField, false)
-                        + "}))");
-            }
-        } else {
-            fieldVisitor.getQueryParamFields().forEach((path, type) -> {
-                Map<String, Object> context = new HashMap<>();
-                context.put("convert", convertString("p", type.getTypeName()));
-                context.put("type", type.getTypeName());
-                context.put("variable", variableForPath(path));
-                context.put("variableSetter", generateVariableSetter(path, type, true));
-                requestToInputSteps.add(apply("flatmap_variable_query_parameter", context));
-            });
-        }
-
-        // Set the path fields after the body, so the path fields override anything set
-        // in the body (if there are collisions).
-        //
-        // @PathVariable(name = <path>) <Type> <camelcasePath>
-        fieldVisitor.getPathFields().forEach((path, type) -> {
-            Map<String, Object> context = new HashMap<>();
-            context.put("convert", convertString("serverRequest.pathVariable(\"" + variableForPath(path) + "\")", type.getType()));
-            context.put("type", type.getType());
-            context.put("variable", variableForPath(path));
-            context.put("variableSetter", generateVariableSetter(path, type, false));
-            requestToInputSteps.add(apply("flatmap_variable_path", context));
-        });
-
-        final StringBuilder requestToInput = new StringBuilder()
-                .append("Mono.just(")
-                .append(inputDescriptor.getQualifiedOriginalName())
-                .append(".newBuilder())");
-
-        requestToInputSteps.forEach(requestToInput::append);
-
-        requestToInput.append(".map(")
-                .append(inputDescriptor.getQualifiedOriginalName())
-                .append(".Builder::build)");
-
-        String index = bindingIndex == null ? "" : Integer.toString(bindingIndex);
-        return new MethodTemplate(methodType)
-                .setPath(template.getQueryPath())
-                .setIsRequestJson(bodyPattern != null)
-                .setRequestToInput(requestToInput.toString())
-                .setRestMethodName(StringUtils.uncapitalize(serviceMethodDescriptor.getName()) + index);
-    }
-
     private class MethodTemplate {
-
-        private static final String PREPARE_INPUT_NAME = "prepareInput";
-        private static final String PATH_NAME = "path";
-        private static final String REST_METHOD_NAME = "restMethodName";
-        private static final String IS_REQUEST_JSON = "isRequestJson";
 
         private final Map<String, Object> context;
 
-
-        MethodTemplate(@Nonnull final SpringMethodType springMethodType) {
+        MethodTemplate(@Nonnull final HttpRule.PatternCase httpMethod) {
             final MessageDescriptor inputDescriptor = serviceMethodDescriptor.getInputMessage();
             final MessageDescriptor outputDescriptor = serviceMethodDescriptor.getOutputMessage();
             final MethodType type = serviceMethodDescriptor.getType();
@@ -300,47 +291,36 @@ public class MethodGenerator {
             context.put("comments", serviceMethodDescriptor.getComment());
             context.put("methodName", StringUtils.uncapitalize(serviceMethodDescriptor.getName()));
             context.put("methodProto", serviceMethodDescriptor.getName());
-            context.put("methodType", springMethodType.getType());
-            context.put("methodTypeName", springMethodType.getTypeName());
+            context.put("methodTypeName", httpMethod.name());
             context.put("serviceName", serviceDescriptor.getName());
-            // Defaults.
-            context.put(IS_REQUEST_JSON, true);
-            context.put(PATH_NAME, "/" + serviceDescriptor.getName() + "/" + StringUtils.uncapitalize(serviceMethodDescriptor.getName()));
-            context.put(REST_METHOD_NAME, StringUtils.uncapitalize(serviceMethodDescriptor.getName()));
-            context.put(PREPARE_INPUT_NAME, "serverRequest.bodyToMono(" + requestBodyType + ".class).map(" + requestBodyType + "::toProto)");
         }
 
         @Nonnull
         public MethodTemplate setRequestToInput(@Nonnull final String requestToInputCode) {
-            this.context.remove(PREPARE_INPUT_NAME);
-            this.context.put(PREPARE_INPUT_NAME, requestToInputCode);
+            this.context.put("prepareInput", requestToInputCode);
             return this;
         }
 
         @Nonnull
         public MethodTemplate setPath(@Nonnull final String path) {
-            this.context.remove(PATH_NAME);
-            this.context.put(PATH_NAME, path);
+            this.context.put("path", path);
             return this;
         }
 
         @Nonnull
         public MethodTemplate setIsRequestJson(final boolean isRequestJson) {
-            this.context.remove(IS_REQUEST_JSON);
-            this.context.put(IS_REQUEST_JSON, isRequestJson);
+            this.context.put("isRequestJson", isRequestJson);
             return this;
         }
 
         @Nonnull
         public MethodTemplate setRestMethodName(@Nonnull final String restMethodName) {
-            this.context.remove(REST_METHOD_NAME);
-            this.context.put(REST_METHOD_NAME, restMethodName);
+            this.context.put("restMethodName", restMethodName);
             return this;
         }
 
         @Nonnull
         public String renderHandleCode() {
-            context.put("serviceCall", apply("service_call_handler", context));
             return apply("service_method", context);
         }
 
@@ -420,34 +400,6 @@ public class MethodGenerator {
                 return field.getProto().getName();
             }
             return String.join(".", path) + "." + field.getProto().getName();
-        }
-    }
-
-    /**
-     * Represents the various HTTP method types, and the associated
-     * Spring enum.
-     */
-    enum SpringMethodType {
-        POST("HttpMethod.POST"),
-        PUT("HttpMethod.PUT"),
-        PATCH("HttpMethod.PATCH"),
-        GET("HttpMethod.GET"),
-        DELETE("HttpMethod.DELETE");
-
-        private final String springMethodType;
-
-        SpringMethodType(final String springMethodType) {
-            this.springMethodType = springMethodType;
-        }
-
-        @Nonnull
-        public String getType() {
-            return springMethodType;
-        }
-
-        @Nonnull
-        public String getTypeName() {
-            return name();
         }
     }
 

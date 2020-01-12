@@ -2,7 +2,11 @@
 public Mono<ServerResponse> {{restMethodName}}(ServerRequest serverRequest) {
     try {
         return {{prepareInput}}
-                .flatMap({{serviceCall}})
+                .flatMap(request -> {
+                    ReactiveStreamObserver<{{resultProto}}> observer = new ReactiveStreamObserver<>();
+                    stub.{{methodName}}(request, observer);
+                    return Mono.from(observer);
+                })
                 .flatMap(res -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .syncBody({{resultType}}.fromProto(res)));
