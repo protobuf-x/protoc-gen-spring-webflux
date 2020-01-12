@@ -12,6 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 
 import static io.protobufx.protoc.gen.spring.generator.Template.apply;
@@ -61,38 +62,34 @@ public class MethodGenerator {
 
         final HttpRule topLevelRule = serviceMethodDescriptor.getHttpRule().get();
         final List<MethodTemplate> allMethodsContexts = new ArrayList<>();
-        allMethodsContexts.add(generateMethodFromHttpRule(topLevelRule, Optional.empty()));
+        allMethodsContexts.add(generateMethodFromHttpRule(topLevelRule, null));
 
         // No recursion allowed - additional bindings will not contain rules that contain
         // additional bindings!
         for (int i = 0; i < topLevelRule.getAdditionalBindingsCount(); ++i) {
-            allMethodsContexts.add(generateMethodFromHttpRule(topLevelRule.getAdditionalBindings(i), Optional.of(i)));
+            allMethodsContexts.add(generateMethodFromHttpRule(topLevelRule.getAdditionalBindings(i), i));
         }
         return allMethodsContexts;
     }
 
     @Nonnull
     private MethodTemplate generateMethodFromHttpRule(@Nonnull final HttpRule httpRule,
-                                                      @Nonnull final Optional<Integer> bindingIndex) {
+                                                      @Nullable final Integer bindingIndex) {
         switch (httpRule.getPatternCase()) {
             case GET:
-                return generateMethodCode(httpRule.getGet(), Optional.empty(),
+                return generateMethodCode(httpRule.getGet(), null,
                         SpringMethodType.GET, bindingIndex);
             case PUT:
-                return generateMethodCode(httpRule.getPut(), httpRule.getBody().isEmpty() ?
-                                Optional.empty() : Optional.of(httpRule.getBody()),
+                return generateMethodCode(httpRule.getPut(), httpRule.getBody().isEmpty() ? null : httpRule.getBody(),
                         SpringMethodType.PUT, bindingIndex);
             case POST:
-                return generateMethodCode(httpRule.getPost(), httpRule.getBody().isEmpty() ?
-                                Optional.empty() : Optional.of(httpRule.getBody()),
+                return generateMethodCode(httpRule.getPost(), httpRule.getBody().isEmpty() ? null : httpRule.getBody(),
                         SpringMethodType.POST, bindingIndex);
             case DELETE:
-                return generateMethodCode(httpRule.getDelete(), httpRule.getBody().isEmpty() ?
-                                Optional.empty() : Optional.of(httpRule.getBody()),
+                return generateMethodCode(httpRule.getDelete(), httpRule.getBody().isEmpty() ? null : httpRule.getBody(),
                         SpringMethodType.DELETE, bindingIndex);
             case PATCH:
-                return generateMethodCode(httpRule.getPatch(), httpRule.getBody().isEmpty() ?
-                                Optional.empty() : Optional.of(httpRule.getBody()),
+                return generateMethodCode(httpRule.getPatch(), httpRule.getBody().isEmpty() ? null : httpRule.getBody(),
                         SpringMethodType.PATCH, bindingIndex);
             case CUSTOM:
                 log.error("Custom HTTP Rule Pattern Not Supported!\n {}",
@@ -181,9 +178,9 @@ public class MethodGenerator {
 
     @Nonnull
     private MethodTemplate generateMethodCode(@Nonnull final String pattern,
-                                              @Nonnull final Optional<String> bodyPattern,
+                                              @Nullable final String bodyPattern,
                                               @Nonnull final SpringMethodType methodType,
-                                              @Nonnull final Optional<Integer> bindingIndex) {
+                                              @Nullable final Integer bindingIndex) {
         final PathTemplate template = new PathTemplate(pattern);
         final MessageDescriptor inputDescriptor = serviceMethodDescriptor.getInputMessage();
         final Set<String> boundVariables = template.getBoundVariables();
@@ -197,8 +194,8 @@ public class MethodGenerator {
 
         final List<String> requestToInputSteps = new ArrayList<>();
 
-        if (bodyPattern.isPresent()) {
-            final String body = StringUtils.strip(bodyPattern.get());
+        if (bodyPattern != null) {
+            final String body = StringUtils.strip(bodyPattern);
             if (body.equals("*")) {
                 requestToInputSteps.add(".flatMap(inputBuilder -> serverRequest.bodyToMono("
                         + getBodyType(true)
@@ -264,12 +261,12 @@ public class MethodGenerator {
                 .append(inputDescriptor.getQualifiedOriginalName())
                 .append(".Builder::build)");
 
+        String index = bindingIndex == null ? "" : Integer.toString(bindingIndex);
         return new MethodTemplate(methodType)
                 .setPath(template.getQueryPath())
-                .setIsRequestJson(bodyPattern.isPresent())
+                .setIsRequestJson(bodyPattern != null)
                 .setRequestToInput(requestToInput.toString())
-                .setRestMethodName(StringUtils.uncapitalize(serviceMethodDescriptor.getName()) +
-                        bindingIndex.map(index -> Integer.toString(index)).orElse(""));
+                .setRestMethodName(StringUtils.uncapitalize(serviceMethodDescriptor.getName()) + index);
     }
 
     private class MethodTemplate {
