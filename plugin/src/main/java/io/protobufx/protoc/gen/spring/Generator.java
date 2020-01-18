@@ -67,10 +67,6 @@ class Generator extends ProtocPluginCodeGenerator {
                 .flatMap(Collection::stream)
                 .collect(toList()));
 
-        context.put("handleMethodDefinitions", serviceDescriptor.getMethodDescriptors().stream()
-                .map(serviceMethodDescriptor ->
-                        new MethodGenerator(serviceDescriptor, serviceMethodDescriptor, responseWrapper).generateHandleCode())
-                .collect(toList()));
         String serviceHandler = apply("service_handler", context);
 
         return Optional.of(serviceHandler);
@@ -110,7 +106,6 @@ class Generator extends ProtocPluginCodeGenerator {
                 .collect(toList()));
 
         return Optional.of(apply("message", context));
-
     }
 
     /**

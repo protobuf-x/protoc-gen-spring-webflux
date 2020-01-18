@@ -48,7 +48,23 @@ public class DemoApplication {
         @Bean
         RouterFunction<ServerResponse> routingServer(ExampleHandlers.EchoServiceHandler handler) {
             return RouterFunctions.route()
-                    .add(handler.handleAllRouterFunction())
+                    .add(handler.allRoutes())
+                    // or manual router builder
+//                    .add(ExampleHandlers.EchoServiceHandler.builder()
+//                            .getEcho(handler::getEcho)
+//                            .getEchoByContent(handler::getEchoByContent)
+//                            .multiGetEcho(handler::multiGetEcho)
+//                            .singleGetEcho(handler::singleGetEcho)
+//                            .newEcho(handler::newEcho)
+//                            .newEcho0(handler::newEcho0)
+//                            .newEcho1(handler::newEcho1)
+//                            .enumGetEcho(handler::enumGetEcho)
+//                            .updateEcho(handler::updateEcho)
+//                            .updateEcho0(handler::updateEcho0)
+//                            .deleteEcho(handler::deleteEcho)
+//                            .errorEcho(handler::errorEcho)
+//                            .build())
+                    // manual routing
                     .GET("/v1/EchoService/GetEcho", handler::getEcho)
                     .build();
         }

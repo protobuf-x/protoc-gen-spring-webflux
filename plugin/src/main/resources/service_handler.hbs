@@ -7,17 +7,65 @@ public static class {{serviceName}}Handler {
     }
 
     @Nonnull
-    public RouterFunction<ServerResponse> handleAllRouterFunction() {
-      return handleAllRouterFunctionBuilder().build();
+    public RouterFunction<ServerResponse> allRoutes() {
+            return RouterFunctions.route()
+                {{#methods}}
+                .{{methodTypeName}}("{{path}}", this::{{restMethodName}})
+                {{/methods}}
+                .build();
     }
 
     @Nonnull
-    public RouterFunctions.Builder handleAllRouterFunctionBuilder() {
-        return RouterFunctions.route()
-            {{#methods}}
-                .{{methodTypeName}}("{{path}}", this::{{restMethodName}})
-            {{/methods}};
+    public static {{serviceName}}RouterBuilder builder() {
+        return new {{serviceName}}RouterBuilder();
     }
 
-    {{#handleMethodDefinitions}}{{.}}{{/handleMethodDefinitions}}
+    {{#methods}}
+    @Nonnull
+    public Mono<ServerResponse> {{restMethodName}}(ServerRequest serverRequest) {
+        try {
+            return {{prepareInput}}
+                    .flatMap(request -> {
+                        ReactiveStreamObserver<{{resultProto}}> observer = new ReactiveStreamObserver<>();
+                        stub.{{methodName}}(request, observer);
+                        return Mono.from(observer);
+                    })
+                    .flatMap(res -> ServerResponse.ok()
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .syncBody({{resultType}}.fromProto(res)));
+        } catch (Exception e) {
+            return Mono.error(e);
+        }
+    }
+    {{/methods}}
+
+    public static class {{serviceName}}RouterBuilder {
+
+        {{#methods}}
+        private HandlerFunction<ServerResponse> {{restMethodName}}Function;
+        {{/methods}}
+
+        {{#methods}}
+        public {{serviceName}}RouterBuilder {{restMethodName}}(HandlerFunction<ServerResponse> {{restMethodName}}Function){
+            this.{{restMethodName}}Function = {{restMethodName}}Function;
+            return this;
+        }
+        {{/methods}}
+
+        @Nonnull
+        public RouterFunctions.Builder and() {
+            RouterFunctions.Builder builder = RouterFunctions.route();
+            {{#methods}}
+            if ({{restMethodName}}Function != null) {
+                builder.{{methodTypeName}}("{{path}}", {{restMethodName}}Function);
+            }
+            {{/methods}}
+            return builder;
+        }
+
+        @Nonnull
+        public RouterFunction<ServerResponse> build() {
+            return and().build();
+        }
+    }
 }

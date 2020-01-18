@@ -42,13 +42,6 @@ public class MethodGenerator {
     }
 
     @Nonnull
-    public String generateHandleCode() {
-        return getMethodTemplates().stream()
-                .map(MethodTemplate::renderHandleCode)
-                .collect(joining());
-    }
-
-    @Nonnull
     public List<Map<String, Object>> getMethodContexts() {
         return getMethodTemplates().stream()
                 .map(MethodTemplate::getContext)
@@ -182,16 +175,13 @@ public class MethodGenerator {
                 .append(".Builder::build)");
 
         String index = bindingIndex == null ? "" : Integer.toString(bindingIndex);
+        String restMethodName = StringUtils.uncapitalize(serviceMethodDescriptor.getName()) + index;
         return new MethodTemplate(httpMethod)
                 .setPath(template.getQueryPath())
                 .setIsRequestJson(bodyPattern != null)
                 .setRequestToInput(requestToInput.toString())
-                .setRestMethodName(StringUtils.uncapitalize(serviceMethodDescriptor.getName()) + index);
-    }
-
-    @Nonnull
-    private String variableForPath(@Nonnull final String path) {
-        return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, path.replace(".", "_"));
+                .setRestMethodName(restMethodName)
+                .setRestPathField(lowerCamelToUpperSnake(restMethodName) + "_PATH");
     }
 
     @Nonnull
@@ -253,6 +243,7 @@ public class MethodGenerator {
         return setFieldBuilder.toString();
     }
 
+    @Nonnull
     private boolean isMessageOrEnum(@Nonnull FieldDescriptor field) {
         return field.getProto().getType().equals(Type.TYPE_MESSAGE) || field.getProto().getType().equals(Type.TYPE_ENUM);
     }
@@ -261,13 +252,22 @@ public class MethodGenerator {
         return field.getProto().getLabel().equals(Label.LABEL_REPEATED);
     }
 
+    @Nonnull
+    private String variableForPath(@Nonnull final String path) {
+        return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, path.replace(".", "_"));
+    }
+
+    @Nonnull
     private String lowerSnakeToUpperCamel(String value) {
         return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, value);
     }
 
+    @Nonnull
+    private String lowerCamelToUpperSnake(String value) {
+        return CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, value);
+    }
 
     private class MethodTemplate {
-
         private final Map<String, Object> context;
 
         MethodTemplate(@Nonnull final HttpRule.PatternCase httpMethod) {
@@ -319,9 +319,9 @@ public class MethodGenerator {
             return this;
         }
 
-        @Nonnull
-        public String renderHandleCode() {
-            return apply("service_method", context);
+        public MethodTemplate setRestPathField(@Nonnull final String restPathField) {
+            this.context.put("restPathField", restPathField);
+            return this;
         }
 
         @Nonnull
@@ -403,6 +403,7 @@ public class MethodGenerator {
         }
     }
 
+    @Nonnull
     private String convertString(String value, String type) {
         switch (type) {
             case "String":
