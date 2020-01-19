@@ -118,7 +118,7 @@ class HandlerServerConfg {
     RouterFunction<ServerResponse> routing(ExampleHandlers.EchoServiceHandler handler) {
         return RouterFunctions.route()
                 // Use the handleAll method to route everything to the generated Handler.
-                .add(handler.handleAllRouterFunction())
+                .add(handler.allRoutes())
                 // Handler can be routed individually by using the generated method.
                 .GET("/echo/{id}", handler::getEcho)
                 .POST("/echo", handler::createEcho)
