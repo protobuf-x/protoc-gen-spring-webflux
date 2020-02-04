@@ -1,8 +1,6 @@
 package com.example.demo;
 
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.StatusRuntimeException;
+import io.grpc.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -67,6 +65,17 @@ public class DemoApplication {
                     // manual routing
                     .GET("/v1/EchoService/GetEcho", handler::getEcho)
                     .build();
+        }
+    }
+
+    public static class HeaderInterceptor implements ServerInterceptor {
+        public static final Context.Key<String> HEADER_2 = Context.key("my-header-2");
+        @Override
+        public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
+            Metadata.Key<String> key = Metadata.Key.of("my-header-2", Metadata.ASCII_STRING_MARSHALLER);
+            String authorization = headers.get(key);
+            Context context = Context.current().withValue(HEADER_2, authorization);
+            return Contexts.interceptCall(context, call, headers, next);
         }
     }
 

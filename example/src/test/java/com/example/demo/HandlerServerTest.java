@@ -201,6 +201,13 @@ public class HandlerServerTest {
 
     @Test
     void test_header() {
-        // TODO
+        client.get()
+                .uri("/echoHeader")
+                .header("my-header-1", "value-1")
+                .header("my-header-2", "value-2")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.echo.content").isEqualTo("value-2");
     }
 }

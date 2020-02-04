@@ -1,5 +1,6 @@
 package com.example.demo;
 
+import com.example.demo.DemoApplication.HeaderInterceptor;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
@@ -8,7 +9,7 @@ import org.lognet.springboot.grpc.GRpcService;
 
 import static java.util.stream.Collectors.toList;
 
-@GRpcService
+@GRpcService(interceptors = {HeaderInterceptor.class})
 public class EchoService extends EchoServiceGrpc.EchoServiceImplBase {
 
     @Override
@@ -94,6 +95,15 @@ public class EchoService extends EchoServiceGrpc.EchoServiceImplBase {
             responseObserver.onError(StatusProto.toStatusRuntimeException(status));
         }
         throw new IllegalStateException("No handled Exception!");
+    }
+
+    @Override
+    public void getEchoHeader(GetEchoRequest request, StreamObserver<GetEchoResponse> responseObserver) {
+        GetEchoResponse res = GetEchoResponse.newBuilder()
+                .setEcho(createEcho(request.getId(), HeaderInterceptor.HEADER_2.get()))
+                .build();
+
+        ok(responseObserver, res);
     }
 
     private Echo createEcho(long id, String text) {

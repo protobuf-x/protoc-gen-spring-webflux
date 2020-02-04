@@ -27,7 +27,12 @@ public static class {{serviceName}}Handler {
             return {{prepareInput}}
                     .flatMap(request -> {
                         ReactiveStreamObserver<{{resultProto}}> observer = new ReactiveStreamObserver<>();
-                        stub.{{methodName}}(request, observer);
+                        Metadata metadata = new Metadata();
+                        serverRequest.headers().asHttpHeaders().entrySet()
+                            .forEach(entity -> {
+                                metadata.put(Metadata.Key.of(entity.getKey(), Metadata.ASCII_STRING_MARSHALLER), entity.getValue().get(0));
+                            });
+                        MetadataUtils.attachHeaders(stub, metadata).{{methodName}}(request, observer);
                         return Mono.from(observer);
                     })
                     .flatMap(res -> ServerResponse.ok()

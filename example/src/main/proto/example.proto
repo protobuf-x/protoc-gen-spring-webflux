@@ -132,6 +132,12 @@ service EchoService {
         };
     }
 
+    rpc GetEchoHeader(GetEchoRequest) returns (GetEchoResponse) {
+        option (google.api.http) = {
+            get: "/echoHeader"
+        };
+    }
+
     rpc NewEcho(NewEchoRequest) returns (NewEchoResponse) {
         option (google.api.http) = {
             post: "/echo"
