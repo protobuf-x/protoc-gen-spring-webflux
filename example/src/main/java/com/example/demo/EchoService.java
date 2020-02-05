@@ -106,6 +106,12 @@ public class EchoService extends EchoServiceGrpc.EchoServiceImplBase {
         ok(responseObserver, res);
     }
 
+    @Override
+    public void emptyEcho(EmptyRequest request, StreamObserver<EmptyResponse> responseObserver) {
+        EmptyResponse res = EmptyResponse.getDefaultInstance();
+        ok(responseObserver, res);
+    }
+
     private Echo createEcho(long id, String text) {
         return Echo.newBuilder()
                 .setId(id)

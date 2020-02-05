@@ -210,4 +210,14 @@ public class HandlerServerTest {
                 .expectBody()
                 .jsonPath("$.echo.content").isEqualTo("value-2");
     }
+
+    @Test
+    void empty() {
+        client.post()
+                .uri("/echoEmpty").contentType(APPLICATION_JSON)
+                .body(fromValue("{}")).exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .json("{}");
+    }
 }
