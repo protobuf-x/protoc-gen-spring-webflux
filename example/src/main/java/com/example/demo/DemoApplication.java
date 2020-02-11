@@ -19,6 +19,7 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.*;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
 import java.util.Map;
 
 @SpringBootApplication
@@ -40,13 +41,17 @@ public class DemoApplication {
         @Bean
         ExampleHandlers.EchoServiceHandler example(ManagedChannel channel) {
             EchoServiceGrpc.EchoServiceStub stub = EchoServiceGrpc.newStub(channel);
-            return new ExampleHandlers.EchoServiceHandler(stub);
+            return ExampleHandlers.EchoServiceHandler.newBuilder()
+                    .setStub(stub)
+                    .setIncludeHeaders(Collections.singletonList("my-header-2"))
+                    .build();
         }
 
         @Bean
         RouterFunction<ServerResponse> routingServer(ExampleHandlers.EchoServiceHandler handler) {
             return RouterFunctions.route()
                     .add(handler.allRoutes())
+
                     // or manual router builder
 //                    .add(ExampleHandlers.EchoServiceHandler.builder()
 //                            .getEcho(handler::getEcho)
@@ -62,6 +67,7 @@ public class DemoApplication {
 //                            .deleteEcho(handler::deleteEcho)
 //                            .errorEcho(handler::errorEcho)
 //                            .build())
+
                     // manual routing
                     .GET("/v1/EchoService/GetEcho", handler::getEcho)
                     .build();

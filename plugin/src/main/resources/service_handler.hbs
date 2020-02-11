@@ -1,9 +1,36 @@
 public static class {{serviceName}}Handler {
 
     private {{package}}.{{serviceName}}Grpc.{{serviceName}}Stub stub;
+    private List<String> includeHeaders;
 
-    public {{serviceName}}Handler({{package}}.{{serviceName}}Grpc.{{serviceName}}Stub stub) {
+    public static final class Builder {
+      private {{package}}.{{serviceName}}Grpc.{{serviceName}}Stub stub;
+      private List<String> includeHeaders;
+
+      public {{serviceName}}Handler build() {
+        {{serviceName}}Handler handler = new {{serviceName}}Handler();
+        handler.stub = this.stub;
+        handler.includeHeaders = this.includeHeaders;
+        return handler;
+      }
+
+      public Builder setStub({{package}}.{{serviceName}}Grpc.{{serviceName}}Stub stub) {
         this.stub = stub;
+        return this;
+      }
+
+      public Builder setIncludeHeaders(List<String> includeHeaders) {
+        this.includeHeaders = includeHeaders;
+        return this;
+      }
+    }
+
+    public {{serviceName}}Handler() {
+      this.stub = stub;
+    }
+
+    public static {{serviceName}}Handler.Builder newBuilder() {
+      return new Builder();
     }
 
     @Nonnull
@@ -28,10 +55,14 @@ public static class {{serviceName}}Handler {
                     .flatMap(request -> {
                         ReactiveStreamObserver<{{resultProto}}> observer = new ReactiveStreamObserver<>();
                         Metadata metadata = new Metadata();
-                        serverRequest.headers().asHttpHeaders().entrySet()
-                            .forEach(entity -> {
-                                metadata.put(Metadata.Key.of(entity.getKey(), Metadata.ASCII_STRING_MARSHALLER), entity.getValue().get(0));
-                            });
+                        if (Objects.nonNull(includeHeaders)) {
+                            serverRequest.headers().asHttpHeaders().entrySet()
+                                .forEach(entity -> {
+                                    if (includeHeaders.contains(entity.getKey())) {
+                                        metadata.put(Metadata.Key.of(entity.getKey(), Metadata.ASCII_STRING_MARSHALLER), entity.getValue().get(0));
+                                    }
+                                });
+                        }
                         MetadataUtils.attachHeaders(stub, metadata).{{methodName}}(request, observer);
                         return Mono.from(observer);
                     })
