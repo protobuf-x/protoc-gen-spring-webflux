@@ -58,7 +58,7 @@ public static class {{serviceName}}Handler {
                         if (Objects.nonNull(includeHeaders)) {
                             serverRequest.headers().asHttpHeaders().entrySet()
                                 .forEach(entity -> {
-                                    if (includeHeaders.contains(entity.getKey())) {
+                                    if (includeHeaders.stream().anyMatch(header -> header.equalsIgnoreCase(entity.getKey()))) {
                                         metadata.put(Metadata.Key.of(entity.getKey(), Metadata.ASCII_STRING_MARSHALLER), entity.getValue().get(0));
                                     }
                                 });
