@@ -114,9 +114,18 @@ public class MethodGenerator {
         if (bodyPattern != null) {
             final String body = StringUtils.strip(bodyPattern);
             if (body.equals("*")) {
-                requestToInputSteps.add(".flatMap(inputBuilder -> serverRequest.bodyToMono("
-                        + getBodyType(true)
-                        + ".class).map(inputDto -> inputBuilder.mergeFrom(inputDto.toProto())))");
+                requestToInputSteps.add(".flatMap(inputBuilder -> {\n" +
+                        "                return serverRequest\n" +
+                        "                        .bodyToMono(DataBuffer.class)\n" +
+                        "                        .map(dataBuffer -> {\n" +
+                        "                          try {\n" +
+                        "                            jsonParser.merge(new InputStreamReader(dataBuffer.asInputStream()), inputBuilder);\n" +
+                        "                            return inputBuilder;\n" +
+                        "                          } catch (IOException e) {\n" +
+                        "                            throw new IllegalArgumentException(e);\n" +
+                        "                          }\n" +
+                        "                        });\n" +
+                        "              })");
             } else {
                 if (body.contains(".")) {
                     throw new IllegalArgumentException("Invalid body: " + body + ". Body must refer to a top-level field.");
