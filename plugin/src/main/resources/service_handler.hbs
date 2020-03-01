@@ -2,15 +2,18 @@ public static class {{serviceName}}Handler {
 
     private {{package}}.{{serviceName}}Grpc.{{serviceName}}Stub stub;
     private List<String> includeHeaders;
+    private JsonFormat.Parser jsonParser;
 
     public static final class Builder {
       private {{package}}.{{serviceName}}Grpc.{{serviceName}}Stub stub;
       private List<String> includeHeaders;
+      private JsonFormat.Parser jsonParser = JsonFormat.parser();
 
       public {{serviceName}}Handler build() {
         {{serviceName}}Handler handler = new {{serviceName}}Handler();
         handler.stub = this.stub;
         handler.includeHeaders = this.includeHeaders;
+        handler.jsonParser = jsonParser;
         return handler;
       }
 
@@ -21,6 +24,11 @@ public static class {{serviceName}}Handler {
 
       public Builder setIncludeHeaders(List<String> includeHeaders) {
         this.includeHeaders = includeHeaders;
+        return this;
+      }
+
+      public Builder setJsonParser(JsonFormat.Parser jsonParser) {
+        this.jsonParser = jsonParser;
         return this;
       }
     }
