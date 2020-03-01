@@ -71,7 +71,9 @@ public class EchoService extends EchoServiceGrpc.EchoServiceImplBase {
     @Override
     public void newEcho(NewEchoRequest request, StreamObserver<NewEchoResponse> responseObserver) {
         NewEchoResponse res = NewEchoResponse.newBuilder()
-                .setEcho(createEcho(request.getEcho().getId(), "EchoService#newEcho"))
+                .setEcho(createEcho(request.getEcho().getId(),
+                        String.format("EchoService#newEcho:{id:%s, content:%s, {id:%s, content:%s}}",
+                                request.getId(), request.getContent(), request.getEcho().getId(), request.getEcho().getContent())))
                 .build();
 
         ok(responseObserver, res);
@@ -80,7 +82,9 @@ public class EchoService extends EchoServiceGrpc.EchoServiceImplBase {
     @Override
     public void updateEcho(UpdateEchoRequest request, StreamObserver<UpdateEchoResponse> responseObserver) {
         UpdateEchoResponse res = UpdateEchoResponse.newBuilder()
-                .setEcho(createEcho(request.getNewEcho().getId(), "EchoService#updateEcho"))
+                .setEcho(createEcho(request.getNewEcho().getId(),
+                        String.format("EchoService#updateEcho:{id:%s, {id:%s, content:%s}}",
+                                request.getId(), request.getNewEcho().getId(), request.getNewEcho().getContent())))
                 .build();
         ok(responseObserver, res);
     }

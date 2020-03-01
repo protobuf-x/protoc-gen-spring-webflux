@@ -124,7 +124,17 @@ public class HandlerServerTest {
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.echo.id").isEqualTo("1")
-                .jsonPath("$.echo.content").isEqualTo("EchoService#newEcho");
+                .jsonPath("$.echo.content").isEqualTo("EchoService#newEcho:{id:0, content:, {id:1, content:test}}");
+    }
+
+    @Test
+    void test_post_nested_path() {
+        client.post()
+                .uri("/echo/1").contentType(APPLICATION_JSON)
+                .body(fromValue("{\"id\":10,\"content\":\"test\"}")).exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.echo.content").isEqualTo("EchoService#newEcho:{id:0, content:, {id:1, content:test}}");
     }
 
     @Test
@@ -135,29 +145,7 @@ public class HandlerServerTest {
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.echo.id").isEqualTo("0")
-                .jsonPath("$.echo.content").isEqualTo("EchoService#newEcho");
-    }
-
-    @Test
-    void test_post_specify_body() {
-        client.post()
-                .uri("/echo/in").contentType(APPLICATION_JSON)
-                .body(fromValue("{\"id\":1,\"content\":\"test\"}")).exchange()
-                .expectStatus().isOk()
-                .expectBody()
-                .jsonPath("$.echo.id").isEqualTo("1")
-                .jsonPath("$.echo.content").isEqualTo("EchoService#newEcho");
-    }
-
-    @Test
-    void test_post_nested_path() {
-        client.post()
-                .uri("/echo/1").contentType(APPLICATION_JSON)
-                .body(fromValue("{\"id\":100,\"content\":\"test\"}")).exchange()
-                .expectStatus().isOk()
-                .expectBody()
-                .jsonPath("$.echo.id").isEqualTo("1")
-                .jsonPath("$.echo.content").isEqualTo("EchoService#newEcho");
+                .jsonPath("$.echo.content").isEqualTo("EchoService#newEcho:{id:0, content:, {id:0, content:}}");
     }
 
     @Test
@@ -167,19 +155,17 @@ public class HandlerServerTest {
                 .body(fromValue("{\"id\":2,\"newEcho\":{\"id\":1,\"content\":\"test\"}}")).exchange()
                 .expectStatus().isOk()
                 .expectBody()
-                .jsonPath("$.echo.id").isEqualTo("2") // TODO
-                .jsonPath("$.echo.content").isEqualTo("EchoService#updateEcho");
+                .jsonPath("$.echo.content").isEqualTo("EchoService#updateEcho:{id:0, {id:2, content:}}");
     }
 
     @Test
     void test_patch() {
         client.patch()
                 .uri("/echo/1").contentType(APPLICATION_JSON)
-                .body(fromValue("{\"id\":1,\"newEcho\":{\"id\":100,\"content\":\"test\"}}")).exchange()
+                .body(fromValue("{\"id\":10,\"content\":\"test\"}")).exchange()
                 .expectStatus().isOk()
                 .expectBody()
-                .jsonPath("$.echo.id").isEqualTo("1") // TODO
-                .jsonPath("$.echo.content").isEqualTo("EchoService#updateEcho");
+                .jsonPath("$.echo.content").isEqualTo("EchoService#updateEcho:{id:1, {id:10, content:test}}");
     }
 
     @Test
