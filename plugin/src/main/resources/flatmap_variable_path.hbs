@@ -1,11 +1,5 @@
-.flatMap(inputBuilder -> Mono.fromSupplier(() -> {
-        try {
-            return {{convert}};
-        } catch (NumberFormatException e) {
-            throw new ServerWebInputException(e.getMessage());
-        }
-    })
-    .filter(Objects::nonNull)
-    .map({{variable}} -> {
-        {{variableSetter}}
-    }))
+.map(inputBuilder -> {
+    {{type}} {{variable}} = query(serverRequest, "{{variable}}", p -> {{convert}});
+    {{variableSetter}};
+    return inputBuilder;
+})

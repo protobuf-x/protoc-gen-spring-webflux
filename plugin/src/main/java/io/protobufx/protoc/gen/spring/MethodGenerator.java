@@ -118,12 +118,8 @@ public class MethodGenerator {
                         "                return serverRequest\n" +
                         "                        .bodyToMono(DataBuffer.class)\n" +
                         "                        .map(dataBuffer -> {\n" +
-                        "                          try {\n" +
-                        "                            jsonParser.merge(new InputStreamReader(dataBuffer.asInputStream()), inputBuilder);\n" +
+                        "                            mergeJson(dataBuffer, inputBuilder);\n" +
                         "                            return inputBuilder;\n" +
-                        "                          } catch (IOException e) {\n" +
-                        "                            throw new IllegalArgumentException(e);\n" +
-                        "                          }\n" +
                         "                        });\n" +
                         "              })");
             } else {
@@ -140,35 +136,43 @@ public class MethodGenerator {
                                         .map(FieldDescriptor::getName)
                                         .collect(joining(", "))));
                 if (bodyField.isList() || bodyField.isMapField()) {
-                    throw new IllegalArgumentException("Invalid body: " + body +
-                            ". Body must refer to a non-repeated/map field.");
+                    throw new IllegalArgumentException("Invalid body: " + body + ". Body must refer to a non-repeated/map field.");
                 }
 
-                requestToInputSteps.add(".flatMap(inputBuilder -> serverRequest.bodyToMono("
-                        + bodyField.getType()
-                        + ".class).filter(Objects::nonNull).map("
-                        + variableForPath(body)
-                        + " -> {"
-                        + generateVariableSetter(body, bodyField, false)
-                        + "}))");
+                requestToInputSteps.add(".flatMap(\n" +
+                        "                inputBuilder ->\n" +
+                        "                    serverRequest\n" +
+                        "                        .bodyToMono(DataBuffer.class)\n" +
+                        "                        .filter(Objects::nonNull)\n" +
+                        "                            .map(\n" +
+                        "                                    dataBuffer -> {\n" +
+                        "                                        " + bodyField.getContentMessage().get().getQualifiedOriginalName() + ".Builder builder = "+bodyField.getContentMessage().get().getQualifiedOriginalName()+".newBuilder();\n" +
+                        "                                        mergeJson(dataBuffer, builder);\n" +
+                        "                                        "+ generateVariableSetterBody(body)+"\n" +
+                        "                                    }))\n");
+
             }
         } else {
             fieldVisitor.getQueryParamFields().forEach((path, type) -> {
                 Map<String, Object> context = new HashMap<>();
-                context.put("convert", convertString("p", type.getTypeName()));
-                context.put("type", type.getTypeName());
+                String typeName = type.getContentMessage()
+                        .map(AbstractDescriptor::getQualifiedOriginalName)
+                        .orElse(type.getTypeName());
+                context.put("convert", convertString("p", typeName));
+                context.put("type", typeName);
                 context.put("variable", variableForPath(path));
-                context.put("variableSetter", generateVariableSetter(path, type, true));
+                context.put("variableSetter", generateVariableSetterParam(path, type));
                 requestToInputSteps.add(apply("flatmap_variable_query_parameter", context));
             });
         }
 
         fieldVisitor.getPathFields().forEach((path, type) -> {
             Map<String, Object> context = new HashMap<>();
-            context.put("convert", convertString("serverRequest.pathVariable(\"" + variableForPath(path) + "\")", type.getType()));
+//            context.put("convert", convertString("serverRequest.pathVariable(\"" + variableForPath(path) + "\")", type.getType()));
+            context.put("convert", convertString("p", type.getType()));
             context.put("type", type.getType());
             context.put("variable", variableForPath(path));
-            context.put("variableSetter", generateVariableSetter(path, type, false));
+            context.put("variableSetter", generateVariableSetterPath(path, type));
             requestToInputSteps.add(apply("flatmap_variable_path", context));
         });
 
@@ -194,13 +198,12 @@ public class MethodGenerator {
     }
 
     @Nonnull
-    private String generateVariableSetter(@Nonnull final String path,
-                                          @Nonnull final FieldDescriptor field,
-                                          final boolean isList) {
+    private String generateVariableSetterParam(@Nonnull final String path,
+                                          @Nonnull final FieldDescriptor field) {
         final StringBuilder setFieldBuilder = new StringBuilder();
         final Deque<String> pathStack = new ArrayDeque<>(Arrays.asList(path.split("\\.")));
 
-        if (isList && !isRepeated(field)) {
+        if (!isRepeated(field)) {
             setFieldBuilder.append("if (!")
                     .append(variableForPath(path))
                     .append(".isEmpty()) {")
@@ -209,12 +212,8 @@ public class MethodGenerator {
                     .append("(")
                     .append(variableForPath(path))
                     .append(".get(0)");
-            if (isMessageOrEnum(field)) {
-                setFieldBuilder.append(".toProto()");
-            }
             setFieldBuilder.append(");")
                     .append("}");
-
         } else {
             setFieldBuilder.append(" inputBuilder");
 
@@ -224,30 +223,50 @@ public class MethodGenerator {
                         .append("Builder()");
             }
 
-            if (isRepeated(field)) {
-                setFieldBuilder.append(".addAll")
-                        .append(lowerSnakeToUpperCamel(pathStack.removeFirst()))
-                        .append("(")
-                        .append(variableForPath(path));
-                if (isMessageOrEnum(field)) {
-                    setFieldBuilder.append(".stream().map(")
-                        .append(field.getTypeName())
-                        .append("::toProto).collect(Collectors.toList())");
-                }
-                setFieldBuilder.append(");");
-            } else {
-                setFieldBuilder.append(".set")
-                        .append(lowerSnakeToUpperCamel(pathStack.removeFirst()))
-                        .append("(")
-                        .append(variableForPath(path));
-                if (isMessageOrEnum(field)) {
-                    setFieldBuilder.append(".toProto()");
-                }
-                setFieldBuilder.append(");");
-            }
+            setFieldBuilder.append(".addAll")
+                    .append(lowerSnakeToUpperCamel(pathStack.removeFirst()))
+                    .append("(")
+                    .append(variableForPath(path));
+            setFieldBuilder.append(");");
         }
 
         setFieldBuilder.append("return inputBuilder;");
+
+        return setFieldBuilder.toString();
+    }
+
+    @Nonnull
+    private String generateVariableSetterPath(@Nonnull final String path,
+                                          @Nonnull final FieldDescriptor field) {
+        final StringBuilder setFieldBuilder = new StringBuilder();
+        final Deque<String> pathStack = new ArrayDeque<>(Arrays.asList(path.split("\\.")));
+
+        setFieldBuilder.append(" inputBuilder");
+        while (pathStack.size() > 1) {
+            setFieldBuilder.append(".get")
+                    .append(lowerSnakeToUpperCamel(pathStack.removeFirst()))
+                    .append("Builder()");
+        }
+
+        setFieldBuilder.append(".set")
+                .append(lowerSnakeToUpperCamel(pathStack.removeFirst()))
+                .append("(")
+                .append(variableForPath(path));
+        setFieldBuilder.append(")");
+
+        return setFieldBuilder.toString();
+    }
+
+    @Nonnull
+    private String generateVariableSetterBody(@Nonnull final String path) {
+        final StringBuilder setFieldBuilder = new StringBuilder();
+        final Deque<String> pathStack = new ArrayDeque<>(Arrays.asList(path.split("\\.")));
+
+        setFieldBuilder
+                .append("inputBuilder.set")
+                .append(lowerSnakeToUpperCamel(pathStack.removeFirst()))
+                .append("(builder.build());")
+                .append("return inputBuilder;");
 
         return setFieldBuilder.toString();
     }

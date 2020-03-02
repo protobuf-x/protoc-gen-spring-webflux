@@ -1,15 +1,4 @@
-.flatMap(inputBuilder -> Mono.just(
-        serverRequest.queryParams().getOrDefault("{{variable}}", Collections.emptyList())
-            .stream()
-            .filter(p -> p != null && !p.equals(""))
-            .map(p -> {
-                try {
-                    return {{convert}};
-                } catch (NumberFormatException e) {
-                    throw new ServerWebInputException(e.getMessage());
-                }
-            })
-            .collect(Collectors.toList()))
-    .map({{variable}} -> {
+.map(inputBuilder -> {
+        List<{{type}}> {{variable}} = param(serverRequest, "{{variable}}", p -> {{convert}});
         {{variableSetter}}
-    }))
+    })

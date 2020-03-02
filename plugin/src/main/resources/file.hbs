@@ -8,8 +8,7 @@ package {{pkgName}};
         value = "by {{pluginName}} compiler plugin",
         comments = "Source: {{protoSourceName}}")
 public class {{outerClassName}} {
-    {{#messageCode}}{{.}}{{/messageCode}}
-    {{#enumCode}}{{.}}{{/enumCode}}
+
     {{#serviceCode}}{{.}}{{/serviceCode}}
 
     static class ReactiveStreamObserver<T> implements StreamObserver<T>, Publisher<T> {
