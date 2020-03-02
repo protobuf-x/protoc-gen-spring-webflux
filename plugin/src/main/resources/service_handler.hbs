@@ -67,7 +67,45 @@ public static class {{serviceName}}Handler {
     @Nonnull
     public Mono<ServerResponse> {{restMethodName}}(ServerRequest serverRequest) {
         try {
-            return {{prepareInput}}
+            {{#with requestContext}}
+            return Mono.just({{requestType}}.newBuilder())
+                    {{#with body}}
+                    .flatMap(inputBuilder -> {
+                        return serverRequest
+                            .bodyToMono(DataBuffer.class)
+                            .map(dataBuffer -> {
+                                {{#if wildcard}}
+                                    mergeJson(dataBuffer, inputBuilder);
+                                {{else}}
+                                    {{type}}.Builder builder = {{type}}.newBuilder();
+                                    mergeJson(dataBuffer, builder);
+                                    inputBuilder{{setterName}}(builder.build());
+                                {{/if}}
+                                return inputBuilder;
+                            });
+                    })
+                    {{/with}}
+                    {{#parameters}}
+                    .map(inputBuilder -> {
+                        List<{{type}}> {{variable}} = param(serverRequest, "{{variable}}", p -> {{convert}});
+                        {{#if isRepeated}}
+                            inputBuilder{{setterName}}({{variable}});
+                        {{else}}
+                            {{variable}}.stream().findFirst()
+                                .ifPresent(p -> inputBuilder{{setterName}}(p));
+                        {{/if}}
+                        return inputBuilder;
+                    })
+                    {{/parameters}}
+                    {{#paths}}
+                    .map(inputBuilder -> {
+                        {{type}} {{variable}} = query(serverRequest, "{{variable}}", p -> {{convert}});
+                        inputBuilder{{setterName}}({{variable}});
+                        return inputBuilder;
+                    })
+                    {{/paths}}
+                    .map({{requestType}}.Builder::build)
+            {{/with}}
                     .flatMap(request -> {
                         ReactiveStreamObserver<{{resultProto}}> observer = new ReactiveStreamObserver<>();
                         Metadata metadata = extractMetadata(serverRequest.headers());
