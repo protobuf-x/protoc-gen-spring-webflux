@@ -115,8 +115,6 @@ class HandlerServerConfg {
                 .setStub(stub)
                 .setIncludeHeaders(Collections.singletonList("Authorization"))
                 .build();
-
-        return new ExampleHandlers.EchoServiceHandler(stub);
     }
 
     @Bean
