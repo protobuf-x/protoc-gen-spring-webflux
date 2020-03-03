@@ -70,7 +70,9 @@ message CreateEchoResponse {
 }
 
 message NewEchoRequest {
-    Echo echo = 1;
+    int32 id = 1;
+    string content = 2;
+    Echo echo = 3;
 }
 
 message NewEchoResponse {
@@ -145,10 +147,6 @@ service EchoService {
         option (google.api.http) = {
             post: "/echo"
             body: "*"
-            additional_bindings {
-                post: "/echo/in"
-                body: "echo"
-            }
             additional_bindings {
                 post: "/echo/{echo.id}"
                 body: "echo"
