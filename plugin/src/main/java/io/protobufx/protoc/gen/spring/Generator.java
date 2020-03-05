@@ -31,15 +31,6 @@ class Generator extends ProtocPluginCodeGenerator {
      */
     @Override
     @Nonnull
-    protected String generatePluginJavaClass(@Nonnull final String protoJavaClass) {
-        return protoJavaClass + "Handlers";
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @Nonnull
     protected String generateImports() {
         return apply("imports", null);
     }

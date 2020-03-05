@@ -72,7 +72,9 @@ public abstract class ProtocPluginCodeGenerator {
      *         your plugin is "protoc-generate-money", this might be "TestDTOMoney."
      */
     @Nonnull
-    protected abstract String generatePluginJavaClass(@Nonnull final String protoJavaClass);
+    protected String generatePluginJavaClass(@Nonnull final String protoJavaClass) {
+        return protoJavaClass;
+    };
 
     /**
      * Generate the Java imports required by the generated code in your plugin.
