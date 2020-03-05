@@ -15,7 +15,11 @@ import org.apache.logging.log4j.Logger;
 import javax.annotation.Nonnull;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.FileDescriptor;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
@@ -86,7 +90,7 @@ public abstract class ProtocPluginCodeGenerator {
      *         on enums.
      */
     @Nonnull
-    protected Optional<String> generateEnumCode(@Nonnull final EnumDescriptor enumDescriptor) {
+    protected Optional<GenerateCode> generateEnumCode(@Nonnull final EnumDescriptor enumDescriptor) {
         return Optional.empty();
     }
 
@@ -99,7 +103,7 @@ public abstract class ProtocPluginCodeGenerator {
      *         on messages.
      */
     @Nonnull
-    protected Optional<String> generateMessageCode(@Nonnull final MessageDescriptor messageDescriptor) {
+    protected Optional<GenerateCode> generateMessageCode(@Nonnull final MessageDescriptor messageDescriptor) {
         return Optional.empty();
     }
 
@@ -112,7 +116,7 @@ public abstract class ProtocPluginCodeGenerator {
      *         on services.
      */
     @Nonnull
-    protected Optional<String> generateServiceCode(@Nonnull final ServiceDescriptor serviceDescriptor) {
+    protected Optional<GenerateCode> generateServiceCode(@Nonnull final ServiceDescriptor serviceDescriptor) {
         return Optional.empty();
     }
 
@@ -132,7 +136,12 @@ public abstract class ProtocPluginCodeGenerator {
     }
 
     @Nonnull
-    protected final Optional<String> generateCode(@Nonnull final AbstractDescriptor abstractDescriptor) {
+    protected FileGenerationUnit getFileGenerationUnit() {
+        return FileGenerationUnit.SINGLE_FILE;
+    }
+
+    @Nonnull
+    protected final Optional<GenerateCode> generateCode(@Nonnull final AbstractDescriptor abstractDescriptor) {
         if (abstractDescriptor instanceof EnumDescriptor) {
             return generateEnumCode((EnumDescriptor)abstractDescriptor);
         } else if (abstractDescriptor instanceof MessageDescriptor) {
@@ -168,9 +177,7 @@ public abstract class ProtocPluginCodeGenerator {
         // as long as we record the processed messages in the registry.
         final CodeGeneratorResponse response = CodeGeneratorResponse.newBuilder()
                 .addAllFile(req.getProtoFileList().stream()
-                        .map(this::generateFile)
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
+                        .flatMap(proto -> generateFile(proto).stream())
                         .collect(toList()))
                 .build();
 
@@ -180,7 +187,7 @@ public abstract class ProtocPluginCodeGenerator {
     }
 
     @Nonnull
-    private Optional<File> generateFile(@Nonnull final FileDescriptorProto fileDescriptorProto) {
+    private List<File> generateFile(@Nonnull final FileDescriptorProto fileDescriptorProto) {
         log.info("Registering messages in file: {} in package: {}",
                 fileDescriptorProto.getName(),
                 fileDescriptorProto.getPackage());
@@ -219,9 +226,27 @@ public abstract class ProtocPluginCodeGenerator {
                 fileDescriptorProto.getPackage());
 
         if (skipFile(fileDescriptorProto)) {
-            return Optional.empty();
+            return Collections.emptyList();
         } else {
-            return Optional.of(context.generateFile());
+            return context.generateFile();
+        }
+    }
+
+    public static class GenerateCode {
+        String className;
+        String code;
+
+        public GenerateCode(String className, String code) {
+            this.className = className;
+            this.code = code;
+        }
+
+        public String getClassName() {
+            return className;
+        }
+
+        public String getCode() {
+            return code;
         }
     }
 }

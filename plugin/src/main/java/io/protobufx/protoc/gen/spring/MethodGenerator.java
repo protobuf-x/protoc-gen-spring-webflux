@@ -176,10 +176,8 @@ public class MethodGenerator {
         final MethodType type = serviceMethodDescriptor.getType();
         final Map<String, Object> context = new HashMap<>();
         context.put("resultProto", outputDescriptor.getQualifiedOriginalName());
-        context.put("resultType", outputDescriptor.getQualifiedName());
         context.put("responseWrapper", responseWrapper);
         context.put("requestProto", inputDescriptor.getQualifiedOriginalName());
-        context.put("requestType", inputDescriptor.getQualifiedName());
         context.put("isClientStream", type == MethodType.BI_STREAM || type == MethodType.CLIENT_STREAM);
         context.put("isSingleResponse", type == MethodType.SIMPLE || type == MethodType.CLIENT_STREAM);
         context.put("comments", serviceMethodDescriptor.getComment());

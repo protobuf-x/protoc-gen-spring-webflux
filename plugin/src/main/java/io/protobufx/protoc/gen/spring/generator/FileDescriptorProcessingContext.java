@@ -143,48 +143,65 @@ class FileDescriptorProcessingContext {
     }
 
     @Nonnull
-    public File generateFile() {
+    public List<File> generateFile() {
         HashMap<String, Object> context = new HashMap<>();
         context.put("pluginName", generator.getPluginName());
         context.put("imports", generator.generateImports());
         context.put("protoSourceName", fileDescriptorProto.getName());
-        context.put("pkgName", javaPkg);
+        context.put("pkgName", getJavaPackage());
         context.put("outerClassName", outerClass.getPluginJavaClass());
         context.put("messageCode", fileDescriptorProto.getMessageTypeList().stream()
                 .map(message -> registry.getMessageDescriptor(message.getName()))
                 .map(generator::generateCode)
                 .filter(Optional::isPresent)
-                .map(Optional::get)
+                .map(gen -> gen.get().getCode())
                 .collect(toList()));
         context.put("enumCode", fileDescriptorProto.getEnumTypeList().stream()
                 .map(message -> registry.getMessageDescriptor(message.getName()))
                 .map(generator::generateCode)
                 .filter(Optional::isPresent)
-                .map(Optional::get)
+                .map(gen -> gen.get().getCode())
                 .collect(toList()));
-        context.put("serviceCode", fileDescriptorProto.getServiceList().stream()
+        List<ProtocPluginCodeGenerator.GenerateCode> generateServiceCode = fileDescriptorProto.getServiceList().stream()
                 .map(message -> registry.getMessageDescriptor(message.getName()))
                 .map(generator::generateCode)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
+                .collect(toList());
+        context.put("serviceCode", generateServiceCode.stream()
+                .map(ProtocPluginCodeGenerator.GenerateCode::getCode)
                 .collect(toList()));
 
-        final String generatedFile = apply("file", context);
+        final Map<String, String> generatedFiles = new HashMap<>();
+        switch (generator.getFileGenerationUnit()) {
+            case SERVICE:
+                Map<String, String> files = generateServiceCode.stream()
+                        .collect(Collectors.toMap(
+                                e -> javaPkg.replace('.', '/') + "/" + e.getClassName() + ".java",
+                                ProtocPluginCodeGenerator.GenerateCode::getCode
+                        ));
+                generatedFiles.putAll(files);
+                break;
+            default:
+                generatedFiles.put(javaPkg.replace('.', '/') + "/" + outerClass.getPluginJavaClass() + ".java",
+                        apply("file", context));
+        }
 
         // Run the formatter to pretty-print the code.
         log.info("Running formatter...");
 
-        try {
-            final String formattedContent = new Formatter().formatSource(generatedFile);
-            return File.newBuilder()
-                    .setName(javaPkg.replace('.', '/') + "/" + outerClass.getPluginJavaClass() + ".java")
-//                    .setName("./" + outerClass.getPluginJavaClass() + ".java")
-                    .setContent(formattedContent)
-                    .build();
-        } catch (FormatterException e) {
-            throw new RuntimeException("Got error " + e.getMessage() + " when formatting content:\n" + generatedFile, e);
-        }
-
+        return generatedFiles.entrySet().stream()
+                .map(entry -> {
+                    try {
+                        final String formattedContent = new Formatter().formatSource(entry.getValue());
+                        return File.newBuilder()
+                                .setName(entry.getKey())
+                                .setContent(formattedContent)
+                                .build();
+                    } catch (FormatterException e) {
+                        throw new RuntimeException("Got error " + e.getMessage() + " when formatting content:\n" + entry.getValue(), e);
+                    }
+                }).collect(toList());
     }
 
     @Nonnull
@@ -200,6 +217,11 @@ class FileDescriptorProcessingContext {
     @Nonnull
     public String getProtobufPackage() {
         return protoPkg;
+    }
+
+    @Nonnull
+    public String getProtoSourceName() {
+        return fileDescriptorProto.getName();
     }
 
     @Nonnull
@@ -467,11 +489,11 @@ class FileDescriptorProcessingContext {
                             "Protobuf compiler should have caught it.");
                 }
                 protoNameCollision = true;
-            } else if (name.equals(pluginJavaClass)) {
+            } else if (name.equals(getPluginJavaClass())) {
                 throw new IllegalArgumentException("Descriptor name " + name +
                         " not allowed. Reserved for REST generation.");
             }
         }
     }
-
 }
+

@@ -44,16 +44,28 @@ class Generator extends ProtocPluginCodeGenerator {
         return apply("imports", null);
     }
 
+    @Nonnull
+    @Override
+    protected FileGenerationUnit getFileGenerationUnit() {
+        return FileGenerationUnit.SERVICE;
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
     @Nonnull
-    protected Optional<String> generateServiceCode(@Nonnull final ServiceDescriptor serviceDescriptor) {
+    protected Optional<GenerateCode> generateServiceCode(@Nonnull final ServiceDescriptor serviceDescriptor) {
         final String responseWrapper = serviceDescriptor.getName() + "Response";
 
         HashMap<String, Object> context = new HashMap<>();
+        context.put("pluginName", this.getPluginName());
+        context.put("imports", this.generateImports());
+        context.put("pkgName", serviceDescriptor.getJavaPkgName());
+        context.put("protoSourceName", serviceDescriptor.getProtoSourceName());
         context.put("serviceName", serviceDescriptor.getName());
+        String serviceClassName = serviceDescriptor.getName() + "Handler";
+        context.put("serviceClassName", serviceClassName);
         context.put("responseWrapper", responseWrapper);
         context.put("package", serviceDescriptor.getJavaPkgName());
         context.put("packageProto", serviceDescriptor.getProtoPkgName());
@@ -65,6 +77,6 @@ class Generator extends ProtocPluginCodeGenerator {
 
         String serviceHandler = apply("service_handler", context);
 
-        return Optional.of(serviceHandler);
+        return Optional.of(new GenerateCode(serviceClassName, serviceHandler));
     }
 }

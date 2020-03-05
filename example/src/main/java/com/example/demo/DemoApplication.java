@@ -37,18 +37,18 @@ public class DemoApplication {
     }
 
     @Configuration
-    class HandlerServerConfig {
+    static class HandlerServerConfig {
         @Bean
-        ExampleHandlers.EchoServiceHandler example(ManagedChannel channel) {
+        EchoServiceHandler example(ManagedChannel channel) {
             EchoServiceGrpc.EchoServiceStub stub = EchoServiceGrpc.newStub(channel);
-            return ExampleHandlers.EchoServiceHandler.newBuilder()
+            return EchoServiceHandler.newBuilder()
                     .setStub(stub)
                     .setIncludeHeaders(Collections.singletonList("my-header-2"))
                     .build();
         }
 
         @Bean
-        RouterFunction<ServerResponse> routingServer(ExampleHandlers.EchoServiceHandler handler) {
+        RouterFunction<ServerResponse> routingServer(EchoServiceHandler handler) {
             return RouterFunctions.route()
                     .add(handler.allRoutes())
 

@@ -25,12 +25,15 @@ public abstract class AbstractDescriptor {
      */
     protected final String protoPkgName;
 
+    protected final String protoSourceName;
+
     /**
      * The outer class the descriptor's code will be in.
      */
     protected final FileDescriptorProcessingContext.OuterClass outerClass;
 
     protected final Registry registry;
+
 
     /**
      * The names of the outer messages for this descriptor.
@@ -44,6 +47,7 @@ public abstract class AbstractDescriptor {
         this.name = name;
         this.javaPkgName = context.getJavaPackage();
         this.protoPkgName = context.getProtobufPackage();
+        this.protoSourceName = context.getProtoSourceName();
         this.outerClass = context.getOuterClass();
 
         this.registry = context.getRegistry();
@@ -116,6 +120,11 @@ public abstract class AbstractDescriptor {
     @Nonnull
     public String getProtoPkgName() {
         return protoPkgName;
+    }
+
+    @Nonnull
+    public String getProtoSourceName() {
+        return protoSourceName;
     }
 
     /**
