@@ -69,7 +69,7 @@ class Generator extends ProtocPluginCodeGenerator {
                 .flatMap(Collection::stream)
                 .collect(toList()));
 
-        String serviceHandler = apply("service_handler", context);
+        String serviceHandler = apply("service", context);
 
         return Optional.of(new GenerateCode(outerClassName, serviceHandler));
     }

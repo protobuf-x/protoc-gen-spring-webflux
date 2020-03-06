@@ -7,10 +7,12 @@ package {{pkgName}};
 @javax.annotation.Generated(
         value = "by {{pluginName}} compiler plugin",
         comments = "Source: {{protoSourceName}}")
-public class {{outerClassName}} {
+public final class {{outerClassName}} {
+
+    private {{outerClassName}}() {}
 
     public interface {{serviceClassName}} {
-        @Nonnull
+        @javax.annotation.Nonnull
         default public RouterFunction<ServerResponse> allRoutes() {
                 return RouterFunctions.route()
                     {{#methods}}
@@ -20,7 +22,7 @@ public class {{outerClassName}} {
         }
 
         {{#methods}}
-        @Nonnull
+        @javax.annotation.Nonnull
         default public Mono<ServerResponse> {{restMethodName}}(ServerRequest serverRequest) {
             return ServerResponse.status(HttpStatus.NOT_IMPLEMENTED).build();
         }
@@ -31,13 +33,15 @@ public class {{outerClassName}} {
       return new {{outerClassName}}.{{serviceGrpcProxyClassName}}.Builder();
     }
 
-    public static class {{serviceGrpcProxyClassName}} implements {{serviceClassName}} {
+    public static final class {{serviceGrpcProxyClassName}} implements {{serviceClassName}} {
+
         private {{package}}.{{serviceName}}Grpc.{{serviceName}}Stub stub;
         private List<String> includeHeaders;
         private JsonFormat.Parser jsonParser;
         private JsonFormat.Printer jsonPrinter;
 
-        @Nonnull
+        @javax.annotation.Nonnull
+        @java.lang.Override
         public RouterFunction<ServerResponse> allRoutes() {
                 return RouterFunctions.route()
                     {{#methods}}
@@ -47,7 +51,8 @@ public class {{outerClassName}} {
         }
 
         {{#methods}}
-        @Nonnull
+        @javax.annotation.Nonnull
+        @java.lang.Override
         public Mono<ServerResponse> {{restMethodName}}(ServerRequest serverRequest) {
             try {
                 {{#with requestContext}}
@@ -104,7 +109,7 @@ public class {{outerClassName}} {
         }
         {{/methods}}
 
-        @Nonnull
+        @javax.annotation.Nonnull
         private <T> T query(ServerRequest serverRequest, String target, Convert<T> convert) {
             try {
               return convert.apply(serverRequest.pathVariable(target));
@@ -113,7 +118,7 @@ public class {{outerClassName}} {
             }
         }
 
-        @Nonnull
+        @javax.annotation.Nonnull
         private <T> List<T> param(ServerRequest serverRequest, String param, Convert<T> converter) {
             List<String> params = serverRequest.queryParams().get(param);
             if (params == null) {
@@ -205,22 +210,22 @@ public class {{outerClassName}} {
         private static class ReactiveStreamObserver<T> implements StreamObserver<T>, Publisher<T> {
             Subscriber<? super T> subscriber;
 
-            @Override
+            @java.lang.Override
             public void onNext(T value) {
                 subscriber.onNext(value);
             }
 
-            @Override
+            @java.lang.Override
             public void onError(Throwable t) {
                 subscriber.onError(t);
             }
 
-            @Override
+            @java.lang.Override
             public void onCompleted() {
                 subscriber.onComplete();
             }
 
-            @Override
+            @java.lang.Override
             public void subscribe(Subscriber<? super T> s) {
                 this.subscriber = s;
                 this.subscriber.onSubscribe(new BaseSubscriber<T>() {});
