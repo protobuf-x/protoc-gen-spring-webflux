@@ -55,8 +55,11 @@ class Generator extends ProtocPluginCodeGenerator {
         context.put("pkgName", serviceDescriptor.getJavaPkgName());
         context.put("protoSourceName", serviceDescriptor.getProtoSourceName());
         context.put("serviceName", serviceDescriptor.getName());
+        String outerClassName = serviceDescriptor.getName() + "Rest";
+        context.put("outerClassName", outerClassName);
         String serviceClassName = serviceDescriptor.getName() + "Handler";
         context.put("serviceClassName", serviceClassName);
+        context.put("serviceGrpcProxyClassName", serviceClassName + "GrpcProxy");
         context.put("responseWrapper", responseWrapper);
         context.put("package", serviceDescriptor.getJavaPkgName());
         context.put("packageProto", serviceDescriptor.getProtoPkgName());
@@ -68,6 +71,6 @@ class Generator extends ProtocPluginCodeGenerator {
 
         String serviceHandler = apply("service_handler", context);
 
-        return Optional.of(new GenerateCode(serviceClassName, serviceHandler));
+        return Optional.of(new GenerateCode(outerClassName, serviceHandler));
     }
 }

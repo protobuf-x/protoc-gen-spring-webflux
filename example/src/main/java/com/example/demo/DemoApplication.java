@@ -22,6 +22,7 @@ import reactor.core.publisher.Mono;
 import java.util.Collections;
 import java.util.Map;
 
+
 @SpringBootApplication
 public class DemoApplication {
 
@@ -39,36 +40,31 @@ public class DemoApplication {
     @Configuration
     static class HandlerServerConfig {
         @Bean
-        EchoServiceHandler example(ManagedChannel channel) {
+        EchoServiceRest.EchoServiceHandler example(ManagedChannel channel) {
             EchoServiceGrpc.EchoServiceStub stub = EchoServiceGrpc.newStub(channel);
-            return EchoServiceHandler.newBuilder()
+            return EchoServiceRest.newGrpcProxyBuilder()
                     .setStub(stub)
                     .setIncludeHeaders(Collections.singletonList("my-header-2"))
                     .build();
         }
 
+//        // Can also implement handler
+//        @Bean
+//        EchoServiceRest.EchoServiceHandler example() {
+//            return new EchoServiceRest.EchoServiceHandler() {
+//                @Nonnull
+//                @Override
+//                public Mono<ServerResponse> getEcho(ServerRequest serverRequest) {
+//                    return ok().bodyValue("OK");
+//                }
+//            };
+//        }
+
         @Bean
-        RouterFunction<ServerResponse> routingServer(EchoServiceHandler handler) {
+        RouterFunction<ServerResponse> routingServer(EchoServiceRest.EchoServiceHandler handler) {
             return RouterFunctions.route()
                     .add(handler.allRoutes())
-
-                    // or manual router builder
-//                    .add(ExampleHandlers.EchoServiceHandler.builder()
-//                            .getEcho(handler::getEcho)
-//                            .getEchoByContent(handler::getEchoByContent)
-//                            .multiGetEcho(handler::multiGetEcho)
-//                            .singleGetEcho(handler::singleGetEcho)
-//                            .newEcho(handler::newEcho)
-//                            .newEcho0(handler::newEcho0)
-//                            .newEcho1(handler::newEcho1)
-//                            .enumGetEcho(handler::enumGetEcho)
-//                            .updateEcho(handler::updateEcho)
-//                            .updateEcho0(handler::updateEcho0)
-//                            .deleteEcho(handler::deleteEcho)
-//                            .errorEcho(handler::errorEcho)
-//                            .build())
-
-                    // manual routing
+                    // append manual routing
                     .GET("/v1/EchoService/GetEcho", handler::getEcho)
                     .build();
         }
