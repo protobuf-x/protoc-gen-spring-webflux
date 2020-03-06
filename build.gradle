@@ -196,5 +196,9 @@ project('example') {
             }
         }
     }
+
+    test {
+        useJUnitPlatform()
+    }
 }
 
