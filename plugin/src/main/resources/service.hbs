@@ -102,7 +102,7 @@ public final class {{outerClassName}} {
                         })
                         .flatMap(res -> ServerResponse.ok()
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .syncBody(printJson(res.toBuilder())));
+                                .bodyValue(printJson(res.toBuilder())));
             } catch (Exception e) {
                 return Mono.error(e);
             }

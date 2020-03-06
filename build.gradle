@@ -182,9 +182,7 @@ project('example') {
         generateProtoTasks {
             all()*.plugins {
                 grpc {}
-                webflux {
-                    option 'style=rest'
-                }
+                webflux {}
             }
         }
     }
