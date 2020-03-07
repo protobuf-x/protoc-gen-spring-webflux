@@ -26,7 +26,7 @@ class FileDescriptorProcessingContext {
 
     private static final Logger log = LogManager.getLogger();
 
-    static final String EMPTY_COMMENT = "\"\"";
+    static final List<String> EMPTY_COMMENT = Collections.emptyList();
 
     /**
      * The value for "syntax" that indicates proto3 syntax.
@@ -133,7 +133,7 @@ class FileDescriptorProcessingContext {
 
 
     @Nonnull
-    public String getCommentAtPath() {
+    public List<String> getCommentAtPath() {
         return formatComment(commentsByPath.get(curPath));
     }
 
@@ -233,38 +233,15 @@ class FileDescriptorProcessingContext {
         return proto3Syntax;
     }
 
-    /**
-     * Formats a comment string into a string that can be put into the generated code and
-     * will look reasonable in swagger documentation.
-     * <p>
-     * For example:
-     * comment saying "stuff" and \n \n line2
-     * Becomes:
-     * "comment saying \"stuff\" and\n" + "line2"
-     *
-     * @param comment The input comment, as given in the {@link SourceCodeInfo}.
-     * @return The comment to put into the generated code template.
-     */
     @Nonnull
-    private static String formatComment(@Nullable String comment) {
+    private static List<String> formatComment(@Nullable String comment) {
         if (comment == null) {
-            return EMPTY_COMMENT;
+            return Collections.emptyList();
         }
-        // START WITH: <spaces> comment saying "stuff" and \n \n line2
-        // BECOMES: comment saying \"stuff\" and \n \n line2
-        String replacedQuotes = StringUtils.strip(comment).replace("\"", "\\\"");
-        // BECOMES: "comment saying \"stuff\" and \n \n line2"
-        String inQuotes = "\"" + replacedQuotes + "\"";
-        // Becomes: {"comment saying \"stuff\" and, line2"}
-        List<String> lines = new ArrayList<>();
-        for (final String line : inQuotes.split("\n")) {
-            final String stripped = StringUtils.strip(line);
-            if (stripped.length() > 0) {
-                lines.add(stripped);
-            }
-        }
-        // BECOMES: "comment saying \"stuff\" and\n" + "line2"
-        return StringUtils.join(lines, "\\n\" + \"");
+        return Arrays.stream(StringUtils.strip(comment).split("\n"))
+                .map(StringUtils::strip)
+                .filter(line -> line.length() > 0)
+                .collect(toList());
     }
 
     /**

@@ -7,6 +7,7 @@ import com.google.protobuf.DescriptorProtos.MethodDescriptorProto;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -19,7 +20,7 @@ public class ServiceMethodDescriptor {
     /**
      * The comment on the method.
      */
-    private final String comment;
+    private final List<String> comment;
 
     /**
      * The {@link MessageDescriptor} for the input to the method.
@@ -50,7 +51,7 @@ public class ServiceMethodDescriptor {
     }
 
     @Nonnull
-    public String getComment() {
+    public List<String> getComment() {
         return comment;
     }
 

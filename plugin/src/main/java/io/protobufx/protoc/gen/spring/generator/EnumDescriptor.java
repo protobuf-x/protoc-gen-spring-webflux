@@ -5,6 +5,7 @@ import com.google.protobuf.DescriptorProtos.EnumDescriptorProto;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -16,7 +17,7 @@ public class EnumDescriptor extends AbstractDescriptor {
     /**
      * Comment for the entire enum.
      */
-    private final String comment;
+    private final List<String> comment;
 
     /**
      * The map of (value name) -> (value index) for the values of this enum.
@@ -32,7 +33,7 @@ public class EnumDescriptor extends AbstractDescriptor {
     /**
      * Comments for the individual values, indexed by value name.
      */
-    private final ImmutableMap<String, String> valueComments;
+    private final ImmutableMap<String, List<String>> valueComments;
 
     EnumDescriptor(@Nonnull final FileDescriptorProcessingContext context,
                           @Nonnull final EnumDescriptorProto enumDescriptor) {
@@ -47,7 +48,7 @@ public class EnumDescriptor extends AbstractDescriptor {
         // Check for comments on the enum.
         comment = context.getCommentAtPath();
 
-        final ImmutableMap.Builder<String, String> valueCommentsBuilder = ImmutableMap.builder();
+        final ImmutableMap.Builder<String, List<String>> valueCommentsBuilder = ImmutableMap.builder();
         // Check for comments on the enum values.
         context.startEnumValueList();
         for (int i = 0; i < enumDescriptor.getValueList().size(); ++i) {
@@ -75,7 +76,7 @@ public class EnumDescriptor extends AbstractDescriptor {
      * @return The comment.
      */
     @Nonnull
-    public String getComment() {
+    public List<String> getComment() {
         return comment;
     }
 
@@ -94,7 +95,7 @@ public class EnumDescriptor extends AbstractDescriptor {
      * @return The comment, or an empty string.
      */
     @Nonnull
-    public String getValueComment(@Nonnull String valueName) {
+    public List<String> getValueComment(@Nonnull String valueName) {
         return valueComments.getOrDefault(valueName, FileDescriptorProcessingContext.EMPTY_COMMENT);
     }
 

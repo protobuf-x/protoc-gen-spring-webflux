@@ -100,12 +100,20 @@ message EmptyRequest {}
 message EmptyResponse {}
 
 service EchoService {
+    // single line comment.
+    // new line.
     rpc GetEcho(GetEchoRequest) returns (GetEchoResponse) {
         option (google.api.http) = {
             get: "/echo/{id}"
         };
     }
 
+    /*
+     * multiple line comment
+     * new line.
+     * next text.
+     * last text.
+     */
     rpc GetEchoByContent(GetEchoByContentRequest) returns (GetEchoResponse) {
         option (google.api.http) = {
             get: "/echo/contents/{content}"

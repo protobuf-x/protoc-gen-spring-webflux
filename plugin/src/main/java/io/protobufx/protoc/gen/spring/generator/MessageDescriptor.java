@@ -19,7 +19,7 @@ public class MessageDescriptor extends AbstractDescriptor {
     /**
      * The comment for this message.
      */
-    private final String comment;
+    private final List<String> comment;
 
     /**
      * The proto describing the message.
@@ -78,7 +78,7 @@ public class MessageDescriptor extends AbstractDescriptor {
     }
 
     @Nonnull
-    public String getComment() {
+    public List<String> getComment() {
         return comment;
     }
 

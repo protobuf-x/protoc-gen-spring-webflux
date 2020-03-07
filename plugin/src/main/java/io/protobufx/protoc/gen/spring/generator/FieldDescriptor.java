@@ -7,6 +7,7 @@ import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Type;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -29,7 +30,7 @@ public class FieldDescriptor {
     /**
      * The comment on the field.
      */
-    private final String comment;
+    private final List<String> comment;
 
     private final Registry registry;
 
@@ -112,7 +113,7 @@ public class FieldDescriptor {
     }
 
     @Nonnull
-    public String getComment() {
+    public List<String> getComment() {
         return comment;
     }
 

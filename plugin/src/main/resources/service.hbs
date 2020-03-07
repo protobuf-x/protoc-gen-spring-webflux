@@ -12,6 +12,7 @@ public final class {{outerClassName}} {
     private {{outerClassName}}() {}
 
     public interface {{serviceClassName}} {
+
         @javax.annotation.Nonnull
         default public RouterFunction<ServerResponse> allRoutes() {
                 return RouterFunctions.route()
@@ -22,6 +23,15 @@ public final class {{outerClassName}} {
         }
 
         {{#methods}}
+        /**
+        {{#if comments}}
+        <pre>
+        {{#comments}}
+        * {{.}}
+        {{/comments}}
+        </pre>
+        {{/if}}
+        */
         @javax.annotation.Nonnull
         default public Mono<ServerResponse> {{restMethodName}}(ServerRequest serverRequest) {
             return ServerResponse.status(HttpStatus.NOT_IMPLEMENTED).build();
@@ -29,6 +39,9 @@ public final class {{outerClassName}} {
         {{/methods}}
     }
 
+    /**
+     * Creates a new grpc-proxy handler builder that supports all call types for the service.
+     */
     public static {{outerClassName}}.{{serviceGrpcProxyClassName}}.Builder newGrpcProxyBuilder() {
       return new {{outerClassName}}.{{serviceGrpcProxyClassName}}.Builder();
     }
@@ -40,6 +53,9 @@ public final class {{outerClassName}} {
         private JsonFormat.Parser jsonParser;
         private JsonFormat.Printer jsonPrinter;
 
+        /**
+         * Offers all route for service.
+         */
         @javax.annotation.Nonnull
         @java.lang.Override
         public RouterFunction<ServerResponse> allRoutes() {
