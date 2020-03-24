@@ -144,7 +144,7 @@ public final class {{outerClassName}} {
         private void mergeJson(DataBuffer dataBuffer, Message.Builder builder)  {
           try {
               jsonParser.merge(
-                      new InputStreamReader(dataBuffer.asInputStream()), builder);
+                      new InputStreamReader(dataBuffer.asInputStream(), java.nio.charset.StandardCharsets.UTF_8), builder);
           } catch (IOException e) {
               throw new ServerWebInputException(e.getMessage());
           }
