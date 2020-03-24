@@ -13,6 +13,9 @@ public final class {{outerClassName}} {
 
     public interface {{serviceClassName}} {
 
+        /**
+         * Offers all route for service.
+         */
         @javax.annotation.Nonnull
         default public RouterFunction<ServerResponse> allRoutes() {
                 return RouterFunctions.route()
@@ -52,19 +55,6 @@ public final class {{outerClassName}} {
         private List<String> includeHeaders;
         private JsonFormat.Parser jsonParser;
         private JsonFormat.Printer jsonPrinter;
-
-        /**
-         * Offers all route for service.
-         */
-        @javax.annotation.Nonnull
-        @java.lang.Override
-        public RouterFunction<ServerResponse> allRoutes() {
-                return RouterFunctions.route()
-                    {{#methods}}
-                    .{{methodTypeName}}("{{path}}", this::{{restMethodName}})
-                    {{/methods}}
-                    .build();
-        }
 
         {{#methods}}
         @javax.annotation.Nonnull
