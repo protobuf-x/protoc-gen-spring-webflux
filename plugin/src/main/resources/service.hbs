@@ -66,13 +66,13 @@ public final class {{outerClassName}} {
                         {{#with body}}
                         .flatMap(inputBuilder -> {
                             return serverRequest
-                                .bodyToMono(DataBuffer.class)
-                                .map(dataBuffer -> {
+                                .bodyToMono(String.class)
+                                .map(jsonString -> {
                                     {{#if wildcard}}
-                                        mergeJson(dataBuffer, inputBuilder);
+                                        mergeJson(jsonString, inputBuilder);
                                     {{else}}
                                         {{type}}.Builder builder = {{type}}.newBuilder();
-                                        mergeJson(dataBuffer, builder);
+                                        mergeJson(jsonString, builder);
                                         inputBuilder{{setterName}}(builder.build());
                                     {{/if}}
                                     return inputBuilder;
@@ -141,10 +141,9 @@ public final class {{outerClassName}} {
                     }).collect(Collectors.toList());
         }
 
-        private void mergeJson(DataBuffer dataBuffer, Message.Builder builder)  {
+        private void mergeJson(String json, Message.Builder builder)  {
           try {
-              jsonParser.merge(
-                      new InputStreamReader(dataBuffer.asInputStream(), java.nio.charset.StandardCharsets.UTF_8), builder);
+              jsonParser.merge(json, builder);
           } catch (IOException e) {
               throw new ServerWebInputException(e.getMessage());
           }
