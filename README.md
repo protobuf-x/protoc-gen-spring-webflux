@@ -98,7 +98,7 @@ protoc -I. \
 
 Download the latest binaries from Maven Central Repository.
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.protobuf-x/protoc-gen-spring-webflux/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.protobuf-x/protoc-gen-spring-webflux/)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.protobuf-x/protoc-gen-spring-webflux.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22io.github.protobuf-x%22%20AND%20a:%22protoc-gen-spring-webflux%22)
 
 4. Write an routing of the Spring WebFlux `Handler` server.
 
