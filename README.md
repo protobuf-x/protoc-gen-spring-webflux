@@ -73,7 +73,7 @@ protobuf {
     plugins {
         // ...
 +       webflux {
-+           artifact = 'io.protobufx:protoc-gen-spring-webflux:${PROTOC_GEN_SPRING_WEBFLUX_VERSION}'
++           artifact = 'io.github.protobuf-x:protoc-gen-spring-webflux:${PROTOC_GEN_SPRING_WEBFLUX_VERSION}'
 +       }
     }
 
@@ -96,7 +96,9 @@ protoc -I. \
      example.proto
 ```
 
-Download the latest binaries from JCenter [ ![Download](https://api.bintray.com/packages/protocol-buffers-extensions/maven/protoc-gen-spring-webflux/images/download.svg) ](https://bintray.com/protocol-buffers-extensions/maven/protoc-gen-spring-webflux/_latestVersion).
+Download the latest binaries from Maven Central Repository.
+
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.protobuf-x/protoc-gen-spring-webflux/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.protobuf-x/protoc-gen-spring-webflux/)
 
 4. Write an routing of the Spring WebFlux `Handler` server.
 

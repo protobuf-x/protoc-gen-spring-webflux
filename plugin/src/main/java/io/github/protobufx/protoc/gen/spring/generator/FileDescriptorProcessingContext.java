@@ -1,4 +1,4 @@
-package io.protobufx.protoc.gen.spring.generator;
+package io.github.protobufx.protoc.gen.spring.generator;
 
 import com.google.common.base.CaseFormat;
 import com.google.googlejavaformat.java.Formatter;
@@ -15,7 +15,6 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static io.protobufx.protoc.gen.spring.generator.Template.apply;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -184,7 +183,7 @@ class FileDescriptorProcessingContext {
                 break;
             default:
                 generatedFiles.put(javaPkg.replace('.', '/') + "/" + outerClass.getPluginJavaClass() + ".java",
-                        apply("file", context));
+                        Template.apply("file", context));
         }
 
         // Run the formatter to pretty-print the code.

@@ -1,4 +1,4 @@
-package io.protobufx.protoc.gen.spring;
+package io.github.protobufx.protoc.gen.spring;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Preconditions;

@@ -1,4 +1,4 @@
-package io.protobufx.protoc.gen.spring.generator;
+package io.github.protobufx.protoc.gen.spring.generator;
 
 import com.google.api.AnnotationsProto;
 import com.google.protobuf.DescriptorProtos.DescriptorProto;
@@ -15,11 +15,9 @@ import org.apache.logging.log4j.Logger;
 import javax.annotation.Nonnull;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.FileDescriptor;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;

@@ -1,4 +1,4 @@
-package io.protobufx.protoc.gen.spring.generator;
+package io.github.protobufx.protoc.gen.spring.generator;
 
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.DescriptorProtos.DescriptorProto;

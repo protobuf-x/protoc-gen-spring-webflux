@@ -1,11 +1,12 @@
-package io.protobufx.protoc.gen.spring;
+package io.github.protobufx.protoc.gen.spring;
 
 import com.google.api.HttpRule;
 import com.google.common.base.CaseFormat;
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Label;
 import com.google.protobuf.TextFormat;
-import io.protobufx.protoc.gen.spring.generator.*;
-import io.protobufx.protoc.gen.spring.generator.ServiceMethodDescriptor.MethodType;
+import io.github.protobufx.protoc.gen.spring.generator.*;
+import io.github.protobufx.protoc.gen.spring.generator.*;
+import io.github.protobufx.protoc.gen.spring.generator.ServiceMethodDescriptor.MethodType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

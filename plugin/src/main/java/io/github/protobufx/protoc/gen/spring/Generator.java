@@ -1,14 +1,17 @@
-package io.protobufx.protoc.gen.spring;
+package io.github.protobufx.protoc.gen.spring;
 
 
-import io.protobufx.protoc.gen.spring.generator.*;
+import io.github.protobufx.protoc.gen.spring.generator.FileGenerationUnit;
+import io.github.protobufx.protoc.gen.spring.generator.ProtocPluginCodeGenerator;
+import io.github.protobufx.protoc.gen.spring.generator.ServiceDescriptor;
+import io.github.protobufx.protoc.gen.spring.generator.*;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Optional;
 
-import static io.protobufx.protoc.gen.spring.generator.Template.apply;
+import static io.github.protobufx.protoc.gen.spring.generator.Template.apply;
 import static java.util.stream.Collectors.toList;
 
 /**

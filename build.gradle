@@ -14,13 +14,11 @@ buildscript {
 }
 
 allprojects {
-    group = 'io.protobufx'
-    version = System.getenv('CIRCLE_TAG') ?: System.getenv('CIRCLE_BRANCH') ?: 'local'
-
+    group = 'io.github.protobuf-x'
+    version = System.getenv('CIRCLE_TAG') ?: "${System.getenv('CIRCLE_BRANCH')}-SNAPSHOT" ?: 'local-SNAPSHOT'
     repositories {
         mavenLocal()
         mavenCentral()
-        jcenter()
     }
 }
 
@@ -29,8 +27,8 @@ project('plugin') {
     apply plugin: 'application'
     apply plugin: 'idea'
     apply plugin: 'com.github.johnrengelman.shadow'
+    apply plugin: 'signing'
     apply plugin: 'maven-publish'
-    apply plugin: 'com.jfrog.bintray'
 
     sourceCompatibility = JavaVersion.VERSION_1_8
 
@@ -50,11 +48,11 @@ project('plugin') {
     }
 
     // Define the main class for the application
-    mainClassName = 'io.protobufx.protoc.gen.spring.Main'
+    mainClassName = 'io.github.protobufx.protoc.gen.spring.Main'
 
     jar {
         manifest {
-            attributes "Main-Class" : "io.protobufx.protoc.gen.spring.Main"
+            attributes "Main-Class" : "io.github.protobufx.protoc.gen.spring.Main"
             attributes 'Multi-Release': 'true'
         }
     }
@@ -115,29 +113,46 @@ project('plugin') {
                 artifact javadocJar
                 artifact linuxExe
                 artifact osxExe
+                pom {
+                    name = 'protoc-gen-spring-webflux'
+                    description = 'gRPC to JSON handler generator protoc plugin'
+                    url = 'https://github.com/protobuf-x/protoc-gen-spring-webflux'
+                    licenses {
+                        license {
+                            name = 'MIT'
+                            url = 'https://opensource.org/licenses/MIT'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'disc99'
+                            name = 'Daisuke Kanehira'
+                            email = 'disc99.g+sonatype@gmail.com'
+                        }
+                    }
+                    scm {
+                        connection = 'git@github.com:protobuf-x/protoc-gen-spring-webflux.git'
+                        developerConnection = 'git@github.com:protobuf-x/protoc-gen-spring-webflux.git'
+                        url = 'https://github.com/protobuf-x/protoc-gen-spring-webflux'
+                    }
+                }
+            }
+        }
+        repositories {
+            maven {
+                def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+                url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+                credentials {
+                    username = "${sonatypeUsername}"
+                    password = "${sonatypePassword}"
+                }
             }
         }
     }
 
-    bintray {
-        user = System.getenv('BINTRAY_USER')
-        key = System.getenv('BINTRAY_KEY')
-        publications = ['mavenJava']
-        publish = true
-        pkg {
-            repo = 'maven'
-            userOrg = 'protocol-buffers-extensions'
-            name = 'protoc-gen-spring-webflux'
-            websiteUrl = 'https://github.com/protocol-buffers-extensions/protoc-gen-spring-webflux'
-            issueTrackerUrl = 'https://github.com/protocol-buffers-extensions/protoc-gen-spring-webflux/issues'
-            vcsUrl = 'https://github.com/protocol-buffers-extensions/protoc-gen-spring-webflux.git'
-            licenses = ['MIT']
-            publicDownloadNumbers = true
-            version {
-                name = project.version
-                vcsTag = project.version
-            }
-        }
+    signing {
+        sign publishing.publications.mavenJava
     }
 }
 
@@ -176,7 +191,7 @@ project('example') {
                 artifact = 'io.grpc:protoc-gen-grpc-java:1.21.0'
             }
             webflux {
-                artifact = 'io.protobufx:protoc-gen-spring-webflux:local'
+                artifact = 'io.github.protobuf-x:protoc-gen-spring-webflux:local'
             }
         }
         generateProtoTasks {
