@@ -145,7 +145,6 @@ class FileDescriptorProcessingContext {
     public List<File> generateFile() {
         HashMap<String, Object> context = new HashMap<>();
         context.put("pluginName", generator.getPluginName());
-        context.put("imports", generator.generateImports());
         context.put("protoSourceName", fileDescriptorProto.getName());
         context.put("pkgName", getJavaPackage());
         context.put("outerClassName", outerClass.getPluginJavaClass());

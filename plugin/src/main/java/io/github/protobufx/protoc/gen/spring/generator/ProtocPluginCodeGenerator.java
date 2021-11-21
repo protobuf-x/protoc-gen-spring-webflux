@@ -75,13 +75,6 @@ public abstract class ProtocPluginCodeGenerator {
     };
 
     /**
-     * Generate the Java imports required by the generated code in your plugin.
-     * @return A string, listing all the imports. e.g: "import java.util.List;import java.util.Map;"
-     */
-    @Nonnull
-    protected abstract String generateImports();
-
-    /**
      * Generate the Java code for a particular {@link EnumDescriptor}.
      *
      * @param enumDescriptor The {@link EnumDescriptor} for an enum defined in the .proto file.

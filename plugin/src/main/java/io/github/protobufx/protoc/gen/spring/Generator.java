@@ -29,15 +29,6 @@ class Generator extends ProtocPluginCodeGenerator {
         return "protoc-gen-spring-webflux";
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @Nonnull
-    protected String generateImports() {
-        return apply("imports", null);
-    }
-
     @Nonnull
     @Override
     protected FileGenerationUnit getFileGenerationUnit() {
@@ -54,7 +45,6 @@ class Generator extends ProtocPluginCodeGenerator {
 
         HashMap<String, Object> context = new HashMap<>();
         context.put("pluginName", this.getPluginName());
-        context.put("imports", this.generateImports());
         context.put("pkgName", serviceDescriptor.getJavaPkgName());
         context.put("protoSourceName", serviceDescriptor.getProtoSourceName());
         context.put("serviceName", serviceDescriptor.getName());
