@@ -85,8 +85,9 @@ public final class {{outerClassName}} {
                             {{#if isRepeated}}
                                 inputBuilder{{setterName}}({{variable}});
                             {{else}}
-                                {{variable}}.stream().findFirst()
-                                    .ifPresent(p -> inputBuilder{{setterName}}(p));
+                                if ({{variable}}.size() != 0) {
+                                    inputBuilder{{setterName}}({{variable}}.get(0));
+                                }
                             {{/if}}
                             return inputBuilder;
                         })
@@ -130,15 +131,17 @@ public final class {{outerClassName}} {
             if (params == null) {
                 return Collections.emptyList();
             }
-            return params.stream()
-                    .filter(p -> !Strings.isNullOrEmpty(p))
-                    .map(p -> {
-                        try {
-                            return converter.apply(p);
-                        } catch (Exception e) {
-                            throw new ServerWebInputException(e.getMessage());
-                        }
-                    }).collect(Collectors.toList());
+            List<T> result = new ArrayList<>();
+            for (String p : params) {
+                if (!Strings.isNullOrEmpty(p)) {
+                    try {
+                        result.add(converter.apply(p));
+                    } catch (Exception e) {
+                        throw new ServerWebInputException(e.getMessage());
+                    }
+                }
+            }
+            return result;
         }
 
         private void mergeJson(String json, Message.Builder builder)  {
@@ -162,11 +165,12 @@ public final class {{outerClassName}} {
           if (Objects.nonNull(includeHeaders)) {
               headers.asHttpHeaders().entrySet()
                       .forEach(entity -> {
-                          if (includeHeaders.stream()
-                                  .anyMatch(header -> header.equalsIgnoreCase(entity.getKey()))) {
-                              metadata.put(Metadata.Key.of(entity.getKey(), Metadata.ASCII_STRING_MARSHALLER),
-                                      entity.getValue().get(0));
-                          }
+                            includeHeaders.forEach(header -> {
+                                if (header.equalsIgnoreCase(entity.getKey())) {
+                                    metadata.put(Metadata.Key.of(entity.getKey(), Metadata.ASCII_STRING_MARSHALLER),
+                                            entity.getValue().get(0));
+                                }
+                            });
                       });
           }
           return metadata;

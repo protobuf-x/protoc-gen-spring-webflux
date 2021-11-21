@@ -15,7 +15,7 @@ buildscript {
 
 allprojects {
     group = 'io.github.protobuf-x'
-    version = System.getenv('CIRCLE_TAG') ?: "${System.getenv('CIRCLE_BRANCH')}-SNAPSHOT" ?: 'local-SNAPSHOT'
+    version = System.getenv('CIRCLE_TAG') ?: System.getenv('CIRCLE_BRANCH') ? "${System.getenv('CIRCLE_BRANCH')}-SNAPSHOT" : 'local'
     repositories {
         mavenLocal()
         mavenCentral()
@@ -176,6 +176,7 @@ project('example') {
 
         testImplementation('org.springframework.boot:spring-boot-starter-test') {
             exclude module: 'junit'
+            exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
         }
         testImplementation 'org.junit.jupiter:junit-jupiter-api'
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
