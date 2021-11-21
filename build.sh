@@ -12,5 +12,5 @@ fi
 
 if [ "$COMMAND" = '-r' ]; then
   echo '>>> Release'
-  ./gradlew clean plugin:bintrayUpload
+  ./gradlew publish
 fi
