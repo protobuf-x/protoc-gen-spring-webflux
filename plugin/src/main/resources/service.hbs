@@ -102,10 +102,25 @@ public final class {{outerClassName}} {
                         .map({{requestType}}.Builder::build)
                 {{/with}}
                         .flatMap(request -> {
-                            ReactiveStreamObserver<{{resultProto}}> observer = new ReactiveStreamObserver<>();
-                            Metadata metadata = extractMetadata(serverRequest.headers());
-                            MetadataUtils.attachHeaders(stub, metadata).{{methodName}}(request, observer);
-                            return Mono.from(observer);
+                            return Mono.<{{resultProto}}>create(emitter -> {
+                                Metadata metadata = extractMetadata(serverRequest.headers());
+                                MetadataUtils.attachHeaders(stub, metadata).{{methodName}}(request, new StreamObserver<{{resultProto}}>() {
+                                    @Override
+                                    public void onNext({{resultProto}} value) {
+                                        emitter.success(value);
+                                    }
+
+                                    @Override
+                                    public void onError(Throwable t) {
+                                        emitter.error(t);
+                                    }
+
+                                    @Override
+                                    public void onCompleted() {
+                                        // Do nothing
+                                    }
+                                });
+                            });
                         })
                         .flatMap(res -> ServerResponse.ok()
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -214,31 +229,6 @@ public final class {{outerClassName}} {
 
         private interface Convert<R> {
             R apply(String target) throws Exception;
-        }
-
-        private static class ReactiveStreamObserver<T> implements StreamObserver<T>, Publisher<T> {
-            Subscriber<? super T> subscriber;
-
-            @java.lang.Override
-            public void onNext(T value) {
-                subscriber.onNext(value);
-            }
-
-            @java.lang.Override
-            public void onError(Throwable t) {
-                subscriber.onError(t);
-            }
-
-            @java.lang.Override
-            public void onCompleted() {
-                subscriber.onComplete();
-            }
-
-            @java.lang.Override
-            public void subscribe(Subscriber<? super T> s) {
-                this.subscriber = s;
-                this.subscriber.onSubscribe(new BaseSubscriber<T>() {});
-            }
         }
     }
 }
