@@ -294,26 +294,30 @@ public class MethodGenerator {
 
     @Nonnull
     private String convertString(String value, String type) {
-        switch (type) {
-            case "String":
-                return value;
-            case "Boolean":
-                return "Boolean.valueOf(" + value + ")";
-            case "Byte":
-                return "Byte.valueOf(" + value + ")";
-            case "Short":
-                return "Short.valueOf(" + value + ")";
-            case "Integer":
-                return "Integer.valueOf(" + value + ")";
-            case "Long":
-                return "Long.valueOf(" + value + ")";
-            case "Float":
-                return "Float.valueOf(" + value + ")";
-            case "Double":
-                return "Double.valueOf(" + value + ")";
-            default:
-                // Enum#valueOf
-                return type + ".valueOf(" + value + ")";
+        if ("String" .equals(type)) {
+            return value;
+        } else if ("Boolean" .equals(type)) {
+            return "Boolean.valueOf(" + value + ")";
+        } else if ("Byte" .equals(type)) {
+            return "Byte.valueOf(" + value + ")";
+        } else if ("Short" .equals(type)) {
+            return "Short.valueOf(" + value + ")";
+        } else if ("Integer" .equals(type)) {
+            return "Integer.valueOf(" + value + ")";
+        } else if ("Long" .equals(type)) {
+            return "Long.valueOf(" + value + ")";
+        } else if ("Float" .equals(type)) {
+            return "Float.valueOf(" + value + ")";
+        } else if ("Double" .equals(type)) {
+            return "Double.valueOf(" + value + ")";
+        } else if (WellKnownTypes.FIELD_MASK.className().equals(type)) {
+            return "com.google.protobuf.util.FieldMaskUtil.fromJsonString(" + value + ")";
+        } else if (WellKnownTypes.TIMESTAMP.className().equals(type)) {
+            return "com.google.protobuf.util.Timestamps.parse(" + value + ")";
+        } else if (WellKnownTypes.DURATION.className().equals(type)) {
+            return "com.google.protobuf.util.Durations.parse(" + value + ")";
         }
+        // Enum#valueOf
+        return type + ".valueOf(" + value + ")";
     }
 }

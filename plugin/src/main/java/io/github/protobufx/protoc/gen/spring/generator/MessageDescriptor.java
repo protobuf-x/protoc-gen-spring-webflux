@@ -109,7 +109,11 @@ public class MessageDescriptor extends AbstractDescriptor {
 
     public void visitFields(@Nonnull final MessageFieldVisitor fieldVisitor) {
         fieldDescriptors.forEach(descriptor -> {
-            if (descriptor.getProto().getType().equals(Type.TYPE_MESSAGE)) {
+            if (descriptor.getProto().getTypeName().equals(WellKnownTypes.FIELD_MASK.typeName())
+                    || descriptor.getProto().getTypeName().equals(WellKnownTypes.TIMESTAMP.typeName())
+                    || descriptor.getProto().getTypeName().equals(WellKnownTypes.DURATION.typeName())) {
+                fieldVisitor.visitBaseField(descriptor);
+            } else if (descriptor.getProto().getType().equals(Type.TYPE_MESSAGE)) {
                 final MessageDescriptor message = (MessageDescriptor) registry.getMessageDescriptor(
                         descriptor.getProto().getTypeName());
                 final boolean deepTraversal = fieldVisitor.startMessageField(descriptor, message);

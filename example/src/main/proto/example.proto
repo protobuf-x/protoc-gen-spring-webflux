@@ -5,6 +5,13 @@ option java_multiple_files = true;
 option java_package = "com.example.demo";
 
 import "google/api/annotations.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
+
 
 message Echo {
     int64 id = 1;
@@ -99,6 +106,30 @@ message ErrorEchoResponse {
 message EmptyRequest {}
 message EmptyResponse {}
 
+message TypesRequest {
+    google.protobuf.FieldMask mask = 1;
+    google.protobuf.Timestamp time = 2;
+    google.protobuf.Duration range = 3;
+//    google.protobuf.StringValue string = 4;
+//    google.protobuf.BytesValue bytes = 5;
+//    google.protobuf.Int32Value int32 = 6;
+//    google.protobuf.UInt32Value uint32 = 7;
+//    google.protobuf.Int64Value in64 = 8;
+//    google.protobuf.UInt64Value uint64 = 9;
+//    google.protobuf.FloatValue float = 10;
+//    google.protobuf.DoubleValue double = 11;
+//    google.protobuf.BoolValue bool = 12;
+//    google.protobuf.Empty empty = 13;
+//    google.protobuf.Struct struct = 14;
+//    google.protobuf.Value value = 15;
+//    google.protobuf.ListValue list = 16;
+//    google.protobuf.NullValue null = 17;
+}
+
+message TypesResponse {
+    string json = 1;
+}
+
 service EchoService {
     // single line comment.
     // new line.
@@ -183,6 +214,12 @@ service EchoService {
         option (google.api.http) = {
             post: "/echoEmpty"
             body: "*"
+        };
+    }
+
+    rpc TypesEcho(TypesRequest) returns (TypesResponse) {
+        option (google.api.http) = {
+            get: "/echoTypes"
         };
     }
 }

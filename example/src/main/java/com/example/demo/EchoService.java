@@ -1,6 +1,10 @@
 package com.example.demo;
 
 import com.example.demo.DemoApplication.HeaderInterceptor;
+import com.google.protobuf.Duration;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.util.Durations;
+import com.google.protobuf.util.JsonFormat;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
@@ -113,6 +117,14 @@ public class EchoService extends EchoServiceGrpc.EchoServiceImplBase {
     @Override
     public void emptyEcho(EmptyRequest request, StreamObserver<EmptyResponse> responseObserver) {
         EmptyResponse res = EmptyResponse.getDefaultInstance();
+        ok(responseObserver, res);
+    }
+
+    @Override
+    public void typesEcho(TypesRequest request, StreamObserver<TypesResponse> responseObserver) {
+        TypesResponse res = TypesResponse.newBuilder()
+                .setJson(request.toString())
+                .build();
         ok(responseObserver, res);
     }
 

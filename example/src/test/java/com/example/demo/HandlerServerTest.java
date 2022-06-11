@@ -1,5 +1,12 @@
 package com.example.demo;
 
+import com.google.common.primitives.UnsignedInts;
+import com.google.common.primitives.UnsignedLongs;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.StringValue;
+import com.google.protobuf.UInt32Value;
+import com.google.protobuf.UInt64Value;
+import com.google.protobuf.util.JsonFormat;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -205,5 +212,13 @@ class HandlerServerTest {
                 .expectStatus().isOk()
                 .expectBody()
                 .json("{}");
+    }
+
+    @Test
+    void types() {
+        client.get().uri("/echoTypes?mask=f1,f2,f3&time=2018-01-15T01:30:15.01Z&range=3s").exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.json", "mask {\n  paths: \"f1\"\n  paths: \"f2\"\n  paths: \"f3\"\n}\ntime {\n  seconds: 1515979815\n  nanos: 10000000\n}\nrange {\n  seconds: 3\n}\n");
     }
 }
