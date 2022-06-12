@@ -7,10 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,7 +45,7 @@ public class PathTemplate {
         if (segmentsAndVerb.length > 2) {
             throw new IllegalArgumentException(": must only be used to separate segments from verb.");
         }
-        this.segments = Stream.of(segmentsAndVerb[0].split("/"))
+        this.segments = Stream.of(trimmedTemplate.split("/"))
                 .map(Segment::new)
                 .collect(toList());
         this.boundVariables = segments.stream()

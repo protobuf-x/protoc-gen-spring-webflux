@@ -128,6 +128,16 @@ public class EchoService extends EchoServiceGrpc.EchoServiceImplBase {
         ok(responseObserver, res);
     }
 
+    @Override
+    public void customEcho(CustomRequest request, StreamObserver<CustomResponse> responseObserver) {
+        CustomResponse res = CustomResponse.newBuilder()
+                .setEcho(createEcho(request.getEcho().getId(),
+                        String.format("EchoService#customEcho:{id:%s, content:%s}", request.getEcho().getId(), request.getEcho().getContent())))
+                .build();
+
+        ok(responseObserver, res);
+    }
+
     private Echo createEcho(long id, String text) {
         return Echo.newBuilder()
                 .setId(id)

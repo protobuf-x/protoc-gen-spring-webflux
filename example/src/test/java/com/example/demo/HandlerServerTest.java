@@ -1,12 +1,5 @@
 package com.example.demo;
 
-import com.google.common.primitives.UnsignedInts;
-import com.google.common.primitives.UnsignedLongs;
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.StringValue;
-import com.google.protobuf.UInt32Value;
-import com.google.protobuf.UInt64Value;
-import com.google.protobuf.util.JsonFormat;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -220,5 +213,16 @@ class HandlerServerTest {
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.json", "mask {\n  paths: \"f1\"\n  paths: \"f2\"\n  paths: \"f3\"\n}\ntime {\n  seconds: 1515979815\n  nanos: 10000000\n}\nrange {\n  seconds: 3\n}\n");
+    }
+
+    @Test
+    void customMethod() {
+        client.post()
+                .uri("/echo:custom").contentType(APPLICATION_JSON)
+                .body(fromValue("{\"echo\":{\"id\":1,\"content\":\"test\"}}")).exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.echo.id").isEqualTo("1")
+                .jsonPath("$.echo.content").isEqualTo("EchoService#customEcho:{id:1, content:test}");
     }
 }

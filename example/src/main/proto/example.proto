@@ -130,6 +130,14 @@ message TypesResponse {
     string json = 1;
 }
 
+message CustomRequest {
+    Echo echo = 1;
+}
+
+message CustomResponse {
+    Echo echo = 1;
+}
+
 service EchoService {
     // single line comment.
     // new line.
@@ -220,6 +228,13 @@ service EchoService {
     rpc TypesEcho(TypesRequest) returns (TypesResponse) {
         option (google.api.http) = {
             get: "/echoTypes"
+        };
+    }
+
+    rpc CustomEcho(CustomRequest) returns (CustomResponse) {
+        option (google.api.http) = {
+            post: "/echo:custom"
+            body: "*"
         };
     }
 }

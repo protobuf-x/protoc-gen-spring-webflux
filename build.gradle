@@ -104,40 +104,40 @@ project('plugin') {
         }
     }
 
-//    publishing {
-//        publications {
-//            mavenJava(MavenPublication) {
-//                artifactId 'protoc-gen-spring-webflux'
-//                artifact shadowJar
-//                artifact sourceJar
-//                artifact javadocJar
-//                artifact linuxExe
-//                artifact osxExe
-//                pom {
-//                    name = 'protoc-gen-spring-webflux'
-//                    description = 'gRPC to JSON handler generator protoc plugin'
-//                    url = 'https://github.com/protobuf-x/protoc-gen-spring-webflux'
-//                    licenses {
-//                        license {
-//                            name = 'MIT'
-//                            url = 'https://opensource.org/licenses/MIT'
-//                        }
-//                    }
-//                    developers {
-//                        developer {
-//                            id = 'disc99'
-//                            name = 'Daisuke Kanehira'
-//                            email = 'disc99.g+sonatype@gmail.com'
-//                        }
-//                    }
-//                    scm {
-//                        connection = 'git@github.com:protobuf-x/protoc-gen-spring-webflux.git'
-//                        developerConnection = 'git@github.com:protobuf-x/protoc-gen-spring-webflux.git'
-//                        url = 'https://github.com/protobuf-x/protoc-gen-spring-webflux'
-//                    }
-//                }
-//            }
-//        }
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                artifactId 'protoc-gen-spring-webflux'
+                artifact shadowJar
+                artifact sourceJar
+                artifact javadocJar
+                artifact linuxExe
+                artifact osxExe
+                pom {
+                    name = 'protoc-gen-spring-webflux'
+                    description = 'gRPC to JSON handler generator protoc plugin'
+                    url = 'https://github.com/protobuf-x/protoc-gen-spring-webflux'
+                    licenses {
+                        license {
+                            name = 'MIT'
+                            url = 'https://opensource.org/licenses/MIT'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'disc99'
+                            name = 'Daisuke Kanehira'
+                            email = 'disc99.g+sonatype@gmail.com'
+                        }
+                    }
+                    scm {
+                        connection = 'git@github.com:protobuf-x/protoc-gen-spring-webflux.git'
+                        developerConnection = 'git@github.com:protobuf-x/protoc-gen-spring-webflux.git'
+                        url = 'https://github.com/protobuf-x/protoc-gen-spring-webflux'
+                    }
+                }
+            }
+        }
 //        repositories {
 //            maven {
 //                def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
@@ -149,8 +149,8 @@ project('plugin') {
 //                }
 //            }
 //        }
-//    }
-//
+    }
+
 //    signing {
 //        sign publishing.publications.mavenJava
 //    }
