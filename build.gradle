@@ -9,7 +9,7 @@ buildscript {
         classpath "org.springframework.boot:spring-boot-gradle-plugin:2.2.2.RELEASE"
         classpath "io.spring.gradle:dependency-management-plugin:1.0.8.RELEASE"
         classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.8'
-        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
+//        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
     }
 }
 
@@ -41,6 +41,7 @@ project('plugin') {
         implementation 'com.google.googlejavaformat:google-java-format:1.7'
         implementation 'org.apache.logging.log4j:log4j-api:2.12.1'
         implementation 'org.apache.logging.log4j:log4j-core:2.12.1'
+        implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.12.1'
 
         testRuntime 'org.junit.platform:junit-platform-launcher:1.4.2'
         testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
@@ -91,7 +92,7 @@ project('plugin') {
 
     task osxExe(type: Jar) {
         archiveBaseName = 'protoc-gen-spring-webflux'
-        archiveClassifier = 'osx-x86_64'
+        archiveClassifier = 'osx-aarch_64'
         archiveExtension = 'exe'
         dependsOn(shadowJar)
         doLast {
@@ -156,6 +157,8 @@ project('plugin') {
 //    }
 }
 
+def grpcVersion = '1.43.0'
+
 project('example') {
     apply plugin: 'java'
     apply plugin: "org.springframework.boot"
@@ -167,9 +170,9 @@ project('example') {
         implementation 'org.springframework.boot:spring-boot-starter-webflux'
         implementation 'org.springframework.boot:spring-boot-starter-json'
         implementation 'io.github.lognet:grpc-spring-boot-starter:3.1.0'
-        implementation "io.grpc:grpc-netty:1.23.0"
-        implementation "io.grpc:grpc-protobuf:1.23.0"
-        implementation "io.grpc:grpc-stub:1.23.0"
+        implementation "io.grpc:grpc-netty:${grpcVersion}"
+        implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+        implementation "io.grpc:grpc-stub:${grpcVersion}"
 
         compileOnly 'org.projectlombok:lombok'
         annotationProcessor 'org.projectlombok:lombok'
@@ -185,11 +188,11 @@ project('example') {
 
     protobuf {
         protoc {
-            artifact = "com.google.protobuf:protoc:3.8.0"
+            artifact = "com.google.protobuf:protoc:3.18.0"
         }
         plugins {
             grpc {
-                artifact = 'io.grpc:protoc-gen-grpc-java:1.21.0'
+                artifact = 'io.grpc:protoc-gen-grpc-java:1.43.0'
             }
             webflux {
                 artifact = 'io.github.protobuf-x:protoc-gen-spring-webflux:local'
