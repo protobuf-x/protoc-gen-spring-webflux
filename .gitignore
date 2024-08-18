@@ -1,3 +1,6 @@
+example/src/main/buf
+.DS_Store
+
 # Idea
 .idea
 *.iml
