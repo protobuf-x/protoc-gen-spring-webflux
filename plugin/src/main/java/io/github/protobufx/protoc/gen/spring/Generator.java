@@ -4,12 +4,10 @@ package io.github.protobufx.protoc.gen.spring;
 import io.github.protobufx.protoc.gen.spring.generator.FileGenerationUnit;
 import io.github.protobufx.protoc.gen.spring.generator.ProtocPluginCodeGenerator;
 import io.github.protobufx.protoc.gen.spring.generator.ServiceDescriptor;
-import io.github.protobufx.protoc.gen.spring.generator.*;
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
 
 import static io.github.protobufx.protoc.gen.spring.generator.Template.apply;
 import static java.util.stream.Collectors.toList;
@@ -56,14 +54,25 @@ class Generator extends ProtocPluginCodeGenerator {
         context.put("responseWrapper", responseWrapper);
         context.put("package", serviceDescriptor.getJavaPkgName());
         context.put("packageProto", serviceDescriptor.getProtoPkgName());
-        context.put("methods", serviceDescriptor.getMethodDescriptors().stream()
+        List<Map<String, Object>> methods = serviceDescriptor.getMethodDescriptors().stream()
                 .map(serviceMethodDescriptor ->
                         new MethodGenerator(serviceDescriptor, serviceMethodDescriptor, responseWrapper).getMethodContexts())
                 .flatMap(Collection::stream)
-                .collect(toList()));
+                .collect(toList());
+        List<Map<String, Object>> routeDefinitions = methods.stream()
+                .map(m -> {
+                    Map<String, Object> method = new HashMap<>(m);
+                    method.put("metaPath", String.valueOf(m.get("path")).replaceAll("\\{.*?}", "{}"));
+                    return method;
+                })
+                .sorted(Comparator.comparing((Function<Map<String, Object>, String>) m -> (String) m.get("metaPath")).reversed())
+                .collect(toList());
+        context.put("methods", methods);
+        context.put("routeDefinitions", routeDefinitions);
 
         String serviceHandler = apply("service", context);
 
         return Optional.of(new GenerateCode(outerClassName, serviceHandler));
     }
+
 }
