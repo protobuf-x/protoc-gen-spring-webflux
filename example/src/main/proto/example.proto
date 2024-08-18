@@ -8,9 +8,9 @@ import "google/api/annotations.proto";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
-import "google/protobuf/wrappers.proto";
-import "google/protobuf/empty.proto";
-import "google/protobuf/struct.proto";
+//import "google/protobuf/wrappers.proto";
+//import "google/protobuf/empty.proto";
+//import "google/protobuf/struct.proto";
 
 
 message Echo {
@@ -138,6 +138,25 @@ message CustomResponse {
     Echo echo = 1;
 }
 
+message Custom2Request {
+    string name = 1;
+    int32 age = 2;
+}
+
+message Custom2Response {
+    string json = 1;
+}
+
+message Custom3Request {
+    string name1 = 1;
+    string name2 = 2;
+    int32 age = 3;
+}
+
+message Custom3Response {
+    string json = 1;
+}
+
 service EchoService {
     // single line comment.
     // new line.
@@ -234,6 +253,27 @@ service EchoService {
     rpc CustomEcho(CustomRequest) returns (CustomResponse) {
         option (google.api.http) = {
             post: "/echo:custom"
+            body: "*"
+        };
+    }
+
+    rpc CustomEcho2(Custom2Request) returns (Custom2Response) {
+        option (google.api.http) = {
+            post: "/echo/{name}:custom"
+            body: "*"
+        };
+    }
+
+    rpc CustomEcho3(Custom3Request) returns (Custom3Response) {
+        option (google.api.http) = {
+            post: "/echo/{name1}/child/{name2}:custom"
+            body: "*"
+        };
+    }
+
+    rpc GetEchoRpc(GetEchoRequest) returns (GetEchoResponse) {
+        option (google.api.http) = {
+            post: "/example.demo.EchoService/GetEchoRpc"
             body: "*"
         };
     }

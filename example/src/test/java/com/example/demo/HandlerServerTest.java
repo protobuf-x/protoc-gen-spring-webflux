@@ -225,4 +225,25 @@ class HandlerServerTest {
                 .jsonPath("$.echo.id").isEqualTo("1")
                 .jsonPath("$.echo.content").isEqualTo("EchoService#customEcho:{id:1, content:test}");
     }
+
+
+    @Test
+    void customMethod2() {
+        client.post()
+                .uri("/echo/tom:custom").contentType(APPLICATION_JSON)
+                .body(fromValue("{\"age\":10}")).exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.json").isEqualTo("name: \"tom\"\nage: 10\n");
+    }
+
+    @Test
+    void customMethod3() {
+        client.post()
+                .uri("/echo/tom1/child/tom2:custom").contentType(APPLICATION_JSON)
+                .body(fromValue("{\"age\":10}")).exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.json").isEqualTo("name1: \"tom1\"\nname2: \"tom2\"\nage: 10\n");
+    }
 }

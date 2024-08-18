@@ -138,6 +138,34 @@ public class EchoService extends EchoServiceGrpc.EchoServiceImplBase {
         ok(responseObserver, res);
     }
 
+    @Override
+    public void customEcho2(Custom2Request request, StreamObserver<Custom2Response> responseObserver) {
+        Custom2Response res = Custom2Response.newBuilder()
+                .setJson(request.toString())
+                .build();
+
+        ok(responseObserver, res);
+
+    }
+
+    @Override
+    public void customEcho3(Custom3Request request, StreamObserver<Custom3Response> responseObserver) {
+        Custom3Response res = Custom3Response.newBuilder()
+                .setJson(request.toString())
+                .build();
+
+        ok(responseObserver, res);
+    }
+
+    @Override
+    public void getEchoRpc(GetEchoRequest request, StreamObserver<GetEchoResponse> responseObserver) {
+        GetEchoResponse res = GetEchoResponse.newBuilder()
+                .setEcho(createEcho(request.getId(), "EchoService#getEchoRpc"))
+                .build();
+
+        ok(responseObserver, res);
+    }
+
     private Echo createEcho(long id, String text) {
         return Echo.newBuilder()
                 .setId(id)

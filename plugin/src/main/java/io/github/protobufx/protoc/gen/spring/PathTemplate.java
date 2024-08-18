@@ -33,6 +33,8 @@ public class PathTemplate {
 
     private final List<Segment> segments;
 
+    private final Optional<String> customSegment;
+
     public PathTemplate(@Nonnull final String template) {
         final String strippedTemplate = StringUtils.strip(template);
         if (strippedTemplate.isEmpty()) {
@@ -45,7 +47,8 @@ public class PathTemplate {
         if (segmentsAndVerb.length > 2) {
             throw new IllegalArgumentException(": must only be used to separate segments from verb.");
         }
-        this.segments = Stream.of(trimmedTemplate.split("/"))
+        this.customSegment = segmentsAndVerb.length == 2 ? Optional.of(segmentsAndVerb[1]) : Optional.empty();
+        this.segments = Stream.of(segmentsAndVerb[0].split("/"))
                 .map(Segment::new)
                 .collect(toList());
         this.boundVariables = segments.stream()
@@ -72,7 +75,8 @@ public class PathTemplate {
                                 new IllegalStateException("Should have field path or literal."));
                     }
                 })
-                .collect(Collectors.joining("/"));
+                .collect(Collectors.joining("/"))
+                + customSegment.map(s -> ":" + s).orElse("");
     }
 
 
@@ -99,7 +103,7 @@ public class PathTemplate {
                 throw new IllegalArgumentException("** Not supported in segment.");
             } else if (strippedSegment.startsWith("{")) {
                 // Variable.
-                Preconditions.checkArgument(strippedSegment.endsWith("}"));
+                Preconditions.checkArgument(strippedSegment.endsWith("}") || strippedSegment.contains("}:"), strippedSegment);
                 // Trim the braces.
                 final String variable = strippedSegment.substring(1, strippedSegment.length() - 1);
                 fieldPath = variable.split("=")[0];
