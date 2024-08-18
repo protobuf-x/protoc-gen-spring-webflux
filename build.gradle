@@ -15,7 +15,7 @@ buildscript {
 
 allprojects {
     group = 'io.github.protobuf-x'
-    version = System.getenv('CIRCLE_TAG') ?: 'local'
+    version = System.getenv('CIRCLE_TAG') ?: 'local-SNAPSHOT'
     repositories {
         mavenLocal()
         mavenCentral()
@@ -90,13 +90,28 @@ project('plugin') {
         }
     }
 
-    task osxExe(type: Jar) {
+    task osxX86Exe(type: Jar) {
+        archiveBaseName = 'protoc-gen-spring-webflux'
+        archiveClassifier = 'osx-x86_64'
+        archiveExtension = 'exe'
+        dependsOn(shadowJar)
+        doLast {
+            File file = osxX86Exe.archivePath
+            file.delete()
+            file.createNewFile()
+            file.executable = true
+            file << "#!/bin/bash\nexec java -jar \$0\n"
+            file << shadowJar.archivePath.bytes
+        }
+    }
+
+    task osxAarchExe(type: Jar) {
         archiveBaseName = 'protoc-gen-spring-webflux'
         archiveClassifier = 'osx-aarch_64'
         archiveExtension = 'exe'
         dependsOn(shadowJar)
         doLast {
-            File file = osxExe.archivePath
+            File file = osxAarchExe.archivePath
             file.delete()
             file.createNewFile()
             file.executable = true
@@ -113,7 +128,8 @@ project('plugin') {
                 artifact sourceJar
                 artifact javadocJar
                 artifact linuxExe
-                artifact osxExe
+                artifact osxX86Exe
+                artifact osxAarchExe
                 pom {
                     name = 'protoc-gen-spring-webflux'
                     description = 'gRPC to JSON handler generator protoc plugin'
@@ -157,8 +173,6 @@ project('plugin') {
 //    }
 }
 
-def grpcVersion = '1.43.0'
-
 project('example') {
     apply plugin: 'java'
     apply plugin: "org.springframework.boot"
@@ -170,9 +184,9 @@ project('example') {
         implementation 'org.springframework.boot:spring-boot-starter-webflux'
         implementation 'org.springframework.boot:spring-boot-starter-json'
         implementation 'io.github.lognet:grpc-spring-boot-starter:3.1.0'
-        implementation "io.grpc:grpc-netty:${grpcVersion}"
-        implementation "io.grpc:grpc-protobuf:${grpcVersion}"
-        implementation "io.grpc:grpc-stub:${grpcVersion}"
+        implementation "io.grpc:grpc-netty:1.23.0"
+        implementation "io.grpc:grpc-protobuf:1.23.0"
+        implementation "io.grpc:grpc-stub:1.23.0"
 
         compileOnly 'org.projectlombok:lombok'
         annotationProcessor 'org.projectlombok:lombok'
@@ -187,15 +201,19 @@ project('example') {
 
 
     protobuf {
+        def versionSuffix = (System.properties.containsKey("os.name")
+                && System.properties.get("os.name") == "Mac OS X"
+                && System.properties.containsKey("os.arch")
+                && System.properties.get("os.arch") == "aarch64") ? ":osx-x86_64" : ""
         protoc {
-            artifact = "com.google.protobuf:protoc:3.18.0"
+            artifact = "com.google.protobuf:protoc:3.8.0${versionSuffix}"
         }
         plugins {
             grpc {
-                artifact = 'io.grpc:protoc-gen-grpc-java:1.43.0'
+                artifact = "io.grpc:protoc-gen-grpc-java:1.21.0${versionSuffix}"
             }
             webflux {
-                artifact = 'io.github.protobuf-x:protoc-gen-spring-webflux:local'
+                artifact = 'io.github.protobuf-x:protoc-gen-spring-webflux:local-SNAPSHOT'
             }
         }
         generateProtoTasks {
