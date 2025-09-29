@@ -132,7 +132,7 @@ public final class {{outerClassName}} {
                         .flatMap(request -> {
                             return Mono.<{{resultProto}}>create(emitter -> {
                                 Metadata metadata = extractMetadata(serverRequest.headers());
-                                MetadataUtils.attachHeaders(stub, metadata).{{methodName}}(request, new StreamObserver<{{resultProto}}>() {
+                                stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata)).{{methodName}}(request, new StreamObserver<{{resultProto}}>() {
                                     @Override
                                     public void onNext({{resultProto}} value) {
                                         emitter.success(value);
