@@ -9,7 +9,6 @@ buildscript {
         classpath "org.springframework.boot:spring-boot-gradle-plugin:2.2.2.RELEASE"
         classpath "io.spring.gradle:dependency-management-plugin:1.0.8.RELEASE"
         classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.8'
-//        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
     }
 }
 
@@ -123,55 +122,20 @@ project('plugin') {
 
     publishing {
         publications {
-            mavenJava(MavenPublication) {
-                artifactId 'protoc-gen-spring-webflux'
+            maven(MavenPublication) {
+                groupId project.group
+                artifactId project.name
                 artifact shadowJar
                 artifact sourceJar
                 artifact javadocJar
                 artifact linuxExe
                 artifact osxX86Exe
                 artifact osxAarchExe
-                pom {
-                    name = 'protoc-gen-spring-webflux'
-                    description = 'gRPC to JSON handler generator protoc plugin'
-                    url = 'https://github.com/protobuf-x/protoc-gen-spring-webflux'
-                    licenses {
-                        license {
-                            name = 'MIT'
-                            url = 'https://opensource.org/licenses/MIT'
-                        }
-                    }
-                    developers {
-                        developer {
-                            id = 'disc99'
-                            name = 'Daisuke Kanehira'
-                            email = 'disc99.g+sonatype@gmail.com'
-                        }
-                    }
-                    scm {
-                        connection = 'git@github.com:protobuf-x/protoc-gen-spring-webflux.git'
-                        developerConnection = 'git@github.com:protobuf-x/protoc-gen-spring-webflux.git'
-                        url = 'https://github.com/protobuf-x/protoc-gen-spring-webflux'
-                    }
-                }
+                version rootProject.version
+                from components.java
             }
         }
-//        repositories {
-//            maven {
-//                def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-//                def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-//                url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
-//                credentials {
-//                    username = "${sonatypeUsername}"
-//                    password = "${sonatypePassword}"
-//                }
-//            }
-//        }
     }
-
-//    signing {
-//        sign publishing.publications.mavenJava
-//    }
 }
 
 project('example') {
