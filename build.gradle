@@ -14,7 +14,7 @@ buildscript {
 
 allprojects {
     group = 'io.github.protobuf-x'
-    version = System.getenv('CIRCLE_TAG') ?: 'local-SNAPSHOT'
+    version = 'local-SNAPSHOT'
     repositories {
         mavenLocal()
         mavenCentral()
@@ -143,6 +143,8 @@ project('example') {
     apply plugin: "io.spring.dependency-management"
     apply plugin: 'com.google.protobuf'
 
+    evaluationDependsOn(':plugin')
+
     dependencies {
         implementation 'org.springframework.boot:spring-boot-starter-actuator'
         implementation 'org.springframework.boot:spring-boot-starter-webflux'
@@ -177,7 +179,7 @@ project('example') {
                 artifact = "io.grpc:protoc-gen-grpc-java:1.21.0${versionSuffix}"
             }
             webflux {
-                artifact = 'io.github.protobuf-x:protoc-gen-spring-webflux:local-SNAPSHOT'
+                artifact = 'io.github.protobuf-x:plugin:local-SNAPSHOT'
             }
         }
         generateProtoTasks {
@@ -196,6 +198,10 @@ project('example') {
                 srcDirs 'build/generated/source/proto/main/webflux'
             }
         }
+    }
+
+    afterEvaluate {
+        tasks.generateProto.dependsOn(':plugin:publishToMavenLocal')
     }
 
     test {
