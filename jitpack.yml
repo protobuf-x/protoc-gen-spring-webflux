@@ -1,6 +1,7 @@
 jdk:
   - openjdk8
 install:
-  - ./gradlew clean -Pgroup=com.github.protobuf-x -Pversion=$VERSION -xtest assemble publishToMavenLocal
-  - ls -la plugin/build/libs/
-  - ls -la ~/.m2/repository/com/github/protobuf-x/protoc-gen-spring-webflux/$VERSION/
+  - ./gradlew clean :plugin:publishToMavenLocal
+  - cp plugin/build/libs/protoc-gen-spring-webflux-local-SNAPSHOT-linux-x86_64.exe ~/.m2/repository/com/github/protobuf-x/protoc-gen-spring-webflux/$VERSION/protoc-gen-spring-webflux-$VERSION-linux-x86_64.exe
+  - cp plugin/build/libs/protoc-gen-spring-webflux-local-SNAPSHOT-osx-x86_64.exe ~/.m2/repository/com/github/protobuf-x/protoc-gen-spring-webflux/$VERSION/protoc-gen-spring-webflux-$VERSION-osx-x86_64.exe
+  - cp plugin/build/libs/protoc-gen-spring-webflux-local-SNAPSHOT-osx-aarch_64.exe ~/.m2/repository/com/github/protobuf-x/protoc-gen-spring-webflux/$VERSION/protoc-gen-spring-webflux-$VERSION-osx-aarch_64.exe
