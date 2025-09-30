@@ -75,48 +75,42 @@ project('plugin') {
         from javadoc.destinationDir
     }
 
-    task linuxExe(type: Jar) {
-        archiveBaseName = 'protoc-gen-spring-webflux'
-        archiveClassifier = 'linux-x86_64'
-        archiveExtension = 'exe'
+    task linuxExe {
         dependsOn(shadowJar)
+        def outputFile = new File(buildDir, "libs/protoc-gen-spring-webflux-${version}-linux-x86_64.exe")
+        outputs.file(outputFile)
         doLast {
-            File file = linuxExe.archivePath
-            file.delete()
-            file.createNewFile()
-            file.executable = true
-            file << "#!/bin/bash\nexec java -jar \$0\n"
-            file << shadowJar.archivePath.bytes
+            outputFile.delete()
+            outputFile.createNewFile()
+            outputFile.executable = true
+            outputFile << "#!/bin/bash\nexec java -jar \$0\n"
+            outputFile << shadowJar.archiveFile.get().asFile.bytes
         }
     }
 
-    task osxX86Exe(type: Jar) {
-        archiveBaseName = 'protoc-gen-spring-webflux'
-        archiveClassifier = 'osx-x86_64'
-        archiveExtension = 'exe'
+    task osxX86Exe {
         dependsOn(shadowJar)
+        def outputFile = new File(buildDir, "libs/protoc-gen-spring-webflux-${version}-osx-x86_64.exe")
+        outputs.file(outputFile)
         doLast {
-            File file = osxX86Exe.archivePath
-            file.delete()
-            file.createNewFile()
-            file.executable = true
-            file << "#!/bin/bash\nexec java -jar \$0\n"
-            file << shadowJar.archivePath.bytes
+            outputFile.delete()
+            outputFile.createNewFile()
+            outputFile.executable = true
+            outputFile << "#!/bin/bash\nexec java -jar \$0\n"
+            outputFile << shadowJar.archiveFile.get().asFile.bytes
         }
     }
 
-    task osxAarchExe(type: Jar) {
-        archiveBaseName = 'protoc-gen-spring-webflux'
-        archiveClassifier = 'osx-aarch_64'
-        archiveExtension = 'exe'
+    task osxAarchExe {
         dependsOn(shadowJar)
+        def outputFile = new File(buildDir, "libs/protoc-gen-spring-webflux-${version}-osx-aarch_64.exe")
+        outputs.file(outputFile)
         doLast {
-            File file = osxAarchExe.archivePath
-            file.delete()
-            file.createNewFile()
-            file.executable = true
-            file << "#!/bin/bash\nexec java -jar \$0\n"
-            file << shadowJar.archivePath.bytes
+            outputFile.delete()
+            outputFile.createNewFile()
+            outputFile.executable = true
+            outputFile << "#!/bin/bash\nexec java -jar \$0\n"
+            outputFile << shadowJar.archiveFile.get().asFile.bytes
         }
     }
 
@@ -128,17 +122,20 @@ project('plugin') {
                 artifact shadowJar
                 artifact sourceJar
                 artifact javadocJar
-                artifact(tasks.getByName('linuxExe')) {
+                artifact(linuxExe.outputs.files.singleFile) {
                     classifier 'linux-x86_64'
                     extension  'exe'
+                    builtBy linuxExe
                 }
-                artifact(tasks.getByName('osxX86Exe')) {
+                artifact(osxX86Exe.outputs.files.singleFile) {
                     classifier 'osx-x86_64'
                     extension  'exe'
+                    builtBy osxX86Exe
                 }
-                artifact(tasks.getByName('osxAarchExe')) {
+                artifact(osxAarchExe.outputs.files.singleFile) {
                     classifier 'osx-aarch_64'
                     extension  'exe'
+                    builtBy osxAarchExe
                 }
                 version rootProject.version
             }
