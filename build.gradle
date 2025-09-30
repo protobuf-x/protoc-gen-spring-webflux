@@ -132,7 +132,6 @@ project('plugin') {
                 artifact osxX86Exe
                 artifact osxAarchExe
                 version rootProject.version
-                from components.java
             }
         }
     }

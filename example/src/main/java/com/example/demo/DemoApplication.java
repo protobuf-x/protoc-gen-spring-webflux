@@ -103,8 +103,8 @@ public class DemoApplication {
                         : httpStatus(errorPropertiesMap);
 
                 return ServerResponse.status(status)
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .body(BodyInserters.fromObject(errorPropertiesMap));
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(BodyInserters.fromValue(errorPropertiesMap));
             }
 
             int grpcCodeToHttpCode(Throwable error) {
