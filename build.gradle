@@ -144,6 +144,9 @@ project('plugin') {
             }
         }
     }
+    tasks.named('publishMavenPublicationToMavenLocal').configure {
+        dependsOn 'linuxExe', 'osxX86Exe', 'osxAarchExe'
+    }
 }
 
 project('example') {
