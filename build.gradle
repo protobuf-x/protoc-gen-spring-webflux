@@ -128,9 +128,18 @@ project('plugin') {
                 artifact shadowJar
                 artifact sourceJar
                 artifact javadocJar
-                artifact linuxExe
-                artifact osxX86Exe
-                artifact osxAarchExe
+                artifact(tasks.getByName('linuxExe')) {
+                    classifier 'linux-x86_64'
+                    extension  'exe'
+                }
+                artifact(tasks.getByName('osxX86Exe')) {
+                    classifier 'osx-x86_64'
+                    extension  'exe'
+                }
+                artifact(tasks.getByName('osxAarchExe')) {
+                    classifier 'osx-aarch_64'
+                    extension  'exe'
+                }
                 version rootProject.version
             }
         }
