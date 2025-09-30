@@ -13,8 +13,8 @@ buildscript {
 }
 
 allprojects {
-    group = 'io.github.protobuf-x'
-    version = 'local-SNAPSHOT'
+    group = project.hasProperty('group') ? project.property('group') : 'io.github.protobuf-x'
+    version = project.hasProperty('version') ? project.property('version') : 'local-SNAPSHOT'
     repositories {
         mavenLocal()
         mavenCentral()

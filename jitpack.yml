@@ -1,7 +1,4 @@
 jdk:
   - openjdk8
 install:
-  - ./gradlew clean :plugin:publishToMavenLocal
-  - mkdir -p ~/.m2/repository/com/github/protobuf-x/protoc-gen-spring-webflux/$VERSION
-  - cp ~/.m2/repository/io/github/protobuf-x/protoc-gen-spring-webflux/local-SNAPSHOT/* ~/.m2/repository/com/github/protobuf-x/protoc-gen-spring-webflux/$VERSION/
-  - cd ~/.m2/repository/com/github/protobuf-x/protoc-gen-spring-webflux/$VERSION && for f in *local-SNAPSHOT*; do mv "$f" "${f//local-SNAPSHOT/$VERSION}"; done
+  - ./gradlew clean -Pgroup=com.github.protobuf-x -Pversion=$VERSION :plugin:publishToMavenLocal
