@@ -2,6 +2,6 @@ jdk:
   - openjdk8
 install:
   - ./gradlew clean :plugin:publishToMavenLocal
-  - cp plugin/build/libs/protoc-gen-spring-webflux-local-SNAPSHOT-linux-x86_64.exe ~/.m2/repository/com/github/protobuf-x/protoc-gen-spring-webflux/$VERSION/protoc-gen-spring-webflux-$VERSION-linux-x86_64.exe
-  - cp plugin/build/libs/protoc-gen-spring-webflux-local-SNAPSHOT-osx-x86_64.exe ~/.m2/repository/com/github/protobuf-x/protoc-gen-spring-webflux/$VERSION/protoc-gen-spring-webflux-$VERSION-osx-x86_64.exe
-  - cp plugin/build/libs/protoc-gen-spring-webflux-local-SNAPSHOT-osx-aarch_64.exe ~/.m2/repository/com/github/protobuf-x/protoc-gen-spring-webflux/$VERSION/protoc-gen-spring-webflux-$VERSION-osx-aarch_64.exe
+  - mkdir -p ~/.m2/repository/com/github/protobuf-x/protoc-gen-spring-webflux/$VERSION
+  - cp ~/.m2/repository/io/github/protobuf-x/protoc-gen-spring-webflux/local-SNAPSHOT/* ~/.m2/repository/com/github/protobuf-x/protoc-gen-spring-webflux/$VERSION/
+  - cd ~/.m2/repository/com/github/protobuf-x/protoc-gen-spring-webflux/$VERSION && for f in *local-SNAPSHOT*; do mv "$f" "${f//local-SNAPSHOT/$VERSION}"; done
