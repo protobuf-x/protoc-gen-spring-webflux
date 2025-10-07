@@ -4,8 +4,9 @@ import io.grpc.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.web.ResourceProperties;
+import org.springframework.boot.autoconfigure.web.WebProperties;
 import org.springframework.boot.autoconfigure.web.reactive.error.AbstractErrorWebExceptionHandler;
+import org.springframework.boot.web.error.ErrorAttributeOptions;
 import org.springframework.boot.web.reactive.error.ErrorAttributes;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.context.ApplicationContext;
@@ -84,11 +85,11 @@ public class DemoApplication {
     @Bean
     @Order(-2)
     public ErrorWebExceptionHandler errorWebExceptionHandler(ErrorAttributes errorAttributes,
-                                                             ResourceProperties resourceProperties,
+                                                             WebProperties webProperties,
                                                              ApplicationContext applicationContext,
                                                              ServerCodecConfigurer serverCodecConfigurer) {
         AbstractErrorWebExceptionHandler exceptionHandler
-                = new AbstractErrorWebExceptionHandler(errorAttributes, resourceProperties, applicationContext) {
+                = new AbstractErrorWebExceptionHandler(errorAttributes, webProperties.getResources(), applicationContext) {
 
             @Override
             protected RouterFunction<ServerResponse> getRoutingFunction(ErrorAttributes errorAttributes) {
@@ -96,15 +97,16 @@ public class DemoApplication {
             }
 
             Mono<ServerResponse> renderErrorResponse(ServerRequest request) {
-                Map<String, Object> errorPropertiesMap = getErrorAttributes(request, false);
+                Map<String, Object> errorPropertiesMap = getErrorAttributes(request,
+                        ErrorAttributeOptions.of(ErrorAttributeOptions.Include.MESSAGE));
                 Throwable error = getError(request);
                 HttpStatus status = (error instanceof StatusRuntimeException)
                         ? HttpStatus.valueOf(grpcCodeToHttpCode(error))
                         : httpStatus(errorPropertiesMap);
 
                 return ServerResponse.status(status)
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .body(BodyInserters.fromObject(errorPropertiesMap));
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(BodyInserters.fromValue(errorPropertiesMap));
             }
 
             int grpcCodeToHttpCode(Throwable error) {

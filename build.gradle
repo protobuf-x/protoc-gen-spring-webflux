@@ -1,37 +1,35 @@
 buildscript {
     repositories {
+        gradlePluginPortal()
         maven {
             url "https://plugins.gradle.org/m2/"
         }
     }
     dependencies {
-        classpath "com.github.jengelman.gradle.plugins:shadow:5.1.0"
-        classpath "org.springframework.boot:spring-boot-gradle-plugin:2.2.2.RELEASE"
+        classpath "com.github.johnrengelman:shadow:8.1.1"
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:2.7.18"
         classpath "io.spring.gradle:dependency-management-plugin:1.0.8.RELEASE"
-        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.8'
-//        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.9.4'
+        classpath "com.vanniktech:gradle-maven-publish-plugin:0.34.0"
     }
 }
 
 allprojects {
     group = 'io.github.protobuf-x'
-    version = System.getenv('CIRCLE_TAG') ?: 'local-SNAPSHOT'
+    version = '0.4.0'
     repositories {
         mavenLocal()
         mavenCentral()
-        maven { url "https://jitpack.io" }
     }
 }
 
 project('plugin') {
-    apply plugin: 'java'
+    apply plugin: "com.vanniktech.maven.publish"
     apply plugin: 'application'
     apply plugin: 'idea'
     apply plugin: 'com.github.johnrengelman.shadow'
-    apply plugin: 'signing'
-    apply plugin: 'maven-publish'
 
-    sourceCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_11
 
     dependencies {
         implementation 'com.google.protobuf:protobuf-java:3.6.1'
@@ -44,15 +42,16 @@ project('plugin') {
         implementation 'org.apache.logging.log4j:log4j-core:2.12.1'
         implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.12.1'
 
-        testRuntime 'org.junit.platform:junit-platform-launcher:1.4.2'
-        testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
-        testRuntime 'org.junit.vintage:junit-vintage-engine:5.4.2'
+        testImplementation 'org.junit.platform:junit-platform-launcher:1.4.2'
+        testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
+        testImplementation 'org.junit.vintage:junit-vintage-engine:5.4.2'
     }
 
     // Define the main class for the application
     mainClassName = 'io.github.protobufx.protoc.gen.spring.Main'
 
     jar {
+        enabled = false
         manifest {
             attributes "Main-Class" : "io.github.protobufx.protoc.gen.spring.Main"
             attributes 'Multi-Release': 'true'
@@ -61,7 +60,7 @@ project('plugin') {
 
     shadowJar {
         archiveBaseName = 'protoc-gen-spring-webflux'
-        classifier = null
+        archiveClassifier = null
     }
 
     task sourceJar(type: Jar) {
@@ -121,57 +120,50 @@ project('plugin') {
         }
     }
 
-    publishing {
-        publications {
-            mavenJava(MavenPublication) {
-                artifactId 'protoc-gen-spring-webflux'
-                artifact shadowJar
-                artifact sourceJar
-                artifact javadocJar
-                artifact linuxExe
-                artifact osxX86Exe
-                artifact osxAarchExe
-                pom {
-                    name = 'protoc-gen-spring-webflux'
-                    description = 'gRPC to JSON handler generator protoc plugin'
-                    url = 'https://github.com/protobuf-x/protoc-gen-spring-webflux'
-                    licenses {
-                        license {
-                            name = 'MIT'
-                            url = 'https://opensource.org/licenses/MIT'
-                        }
-                    }
-                    developers {
-                        developer {
-                            id = 'disc99'
-                            name = 'Daisuke Kanehira'
-                            email = 'disc99.g+sonatype@gmail.com'
-                        }
-                    }
-                    scm {
-                        connection = 'git@github.com:protobuf-x/protoc-gen-spring-webflux.git'
-                        developerConnection = 'git@github.com:protobuf-x/protoc-gen-spring-webflux.git'
-                        url = 'https://github.com/protobuf-x/protoc-gen-spring-webflux'
-                    }
+    mavenPublishing {
+        publishToMavenCentral()
+        signAllPublications()
+
+        coordinates('io.github.protobuf-x', 'protoc-gen-spring-webflux', project.version)
+
+        pom {
+            name = 'protoc-gen-spring-webflux'
+            description = 'gRPC to JSON handler generator protoc plugin'
+            inceptionYear = "2025"
+            url = 'https://github.com/protobuf-x/protoc-gen-spring-webflux'
+            licenses {
+                license {
+                    name = "MIT"
+                    url = 'https://opensource.org/licenses/MIT'
+                    distribution = 'https://opensource.org/licenses/MIT'
+                }
+            }
+            developers {
+                developer {
+                    id = "disc99"
+                    name = "Daisuke Kanehira"
+                    url = "https://github.com/disc99/"
+                }
+            }
+            scm {
+                url = "https://github.com/protobuf-x/protoc-gen-spring-webflux/"
+                connection = "scm:git:git://github.com/protobuf-x/protoc-gen-spring-webflux.git"
+                developerConnection = "scm:git:ssh://git@github.com/protobuf-x/protoc-gen-spring-webflux.git"
+            }
+        }
+    }
+
+    afterEvaluate {
+        publishing {
+            publications {
+                maven(MavenPublication) {
+                    artifact linuxExe
+                    artifact osxX86Exe
+                    artifact osxAarchExe
                 }
             }
         }
-//        repositories {
-//            maven {
-//                def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-//                def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-//                url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
-//                credentials {
-//                    username = "${sonatypeUsername}"
-//                    password = "${sonatypePassword}"
-//                }
-//            }
-//        }
     }
-
-//    signing {
-//        sign publishing.publications.mavenJava
-//    }
 }
 
 project('example') {
