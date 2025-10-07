@@ -81,7 +81,7 @@ public final class {{outerClassName}} {
 
         private {{package}}.{{serviceName}}Grpc.{{serviceName}}Stub stub;
         private List<String> includeHeaders;
-        private JsonFormat.Parser jsonParser;
+        private {{serviceName}}RequestMapper requestMapper;
         private JsonFormat.Printer jsonPrinter;
 
         {{#methods}}
@@ -90,44 +90,7 @@ public final class {{outerClassName}} {
         public Mono<ServerResponse> {{restMethodName}}(ServerRequest serverRequest) {
             try {
                 {{#with requestContext}}
-                return Mono.just({{requestType}}.newBuilder())
-                        {{#with body}}
-                        .flatMap(inputBuilder -> {
-                            return serverRequest
-                                .bodyToMono(String.class)
-                                .map(jsonString -> {
-                                    {{#if wildcard}}
-                                        mergeJson(jsonString, inputBuilder);
-                                    {{else}}
-                                        {{type}}.Builder builder = {{type}}.newBuilder();
-                                        mergeJson(jsonString, builder);
-                                        inputBuilder{{setterName}}(builder.build());
-                                    {{/if}}
-                                    return inputBuilder;
-                                });
-                        })
-                        {{/with}}
-                        {{#parameters}}
-                        .map(inputBuilder -> {
-                            List<{{type}}> {{variable}} = param(serverRequest, "{{variable}}", p -> {{convert}});
-                            {{#if isRepeated}}
-                                inputBuilder{{setterName}}({{variable}});
-                            {{else}}
-                                if ({{variable}}.size() != 0) {
-                                    inputBuilder{{setterName}}({{variable}}.get(0));
-                                }
-                            {{/if}}
-                            return inputBuilder;
-                        })
-                        {{/parameters}}
-                        {{#paths}}
-                        .map(inputBuilder -> {
-                            {{type}} {{variable}} = query(serverRequest, "{{variable}}", p -> {{convert}});
-                            inputBuilder{{setterName}}({{variable}});
-                            return inputBuilder;
-                        })
-                        {{/paths}}
-                        .map({{requestType}}.Builder::build)
+                return requestMapper.{{restMethodName}}(serverRequest)
                 {{/with}}
                         .flatMap(request -> {
                             return Mono.<{{resultProto}}>create(emitter -> {
@@ -158,42 +121,6 @@ public final class {{outerClassName}} {
             }
         }
         {{/methods}}
-
-        @javax.annotation.Nonnull
-        private <T> T query(ServerRequest serverRequest, String target, Convert<T> convert) {
-            try {
-              return convert.apply(serverRequest.pathVariable(target));
-            } catch (Exception e) {
-              throw new ServerWebInputException(e.getMessage());
-            }
-        }
-
-        @javax.annotation.Nonnull
-        private <T> List<T> param(ServerRequest serverRequest, String param, Convert<T> converter) {
-            List<String> params = serverRequest.queryParams().get(param);
-            if (params == null) {
-                return Collections.emptyList();
-            }
-            List<T> result = new ArrayList<>();
-            for (String p : params) {
-                if (!Strings.isNullOrEmpty(p)) {
-                    try {
-                        result.add(converter.apply(p));
-                    } catch (Exception e) {
-                        throw new ServerWebInputException(e.getMessage());
-                    }
-                }
-            }
-            return result;
-        }
-
-        private void mergeJson(String json, Message.Builder builder)  {
-          try {
-              jsonParser.merge(json, builder);
-          } catch (IOException e) {
-              throw new ServerWebInputException(e.getMessage());
-          }
-        }
 
         private String printJson(MessageOrBuilder message) {
           try {
@@ -229,7 +156,7 @@ public final class {{outerClassName}} {
             {{serviceGrpcProxyClassName}} handler = new {{serviceGrpcProxyClassName}}();
             handler.stub = this.stub;
             handler.includeHeaders = this.includeHeaders;
-            handler.jsonParser = jsonParser;
+            handler.requestMapper = new {{serviceName}}RequestMapper(jsonParser);
             handler.jsonPrinter = jsonPrinter;
             return handler;
           }
@@ -254,9 +181,105 @@ public final class {{outerClassName}} {
             return this;
           }
         }
+    }
 
-        private interface Convert<R> {
-            R apply(String target) throws Exception;
+    public static final class {{serviceName}}RequestMapper {
+        private JsonFormat.Parser jsonParser = JsonFormat.parser().ignoringUnknownFields();
+
+        public {{serviceName}}RequestMapper() {}
+
+        public {{serviceName}}RequestMapper(JsonFormat.Parser jsonParser) {
+            this.jsonParser = jsonParser;
         }
+
+        {{#methods}}
+        {{#with requestContext}}
+        @javax.annotation.Nonnull
+        public Mono<{{requestType}}> {{restMethodName}}(ServerRequest serverRequest) {
+            try {
+                return Mono.just({{requestType}}.newBuilder())
+                        {{#with body}}
+                        .flatMap(inputBuilder -> {
+                            return serverRequest
+                                .bodyToMono(String.class)
+                                .map(jsonString -> {
+                                    {{#if wildcard}}
+                                        mergeJson(jsonString, inputBuilder, jsonParser);
+                                    {{else}}
+                                        {{type}}.Builder builder = {{type}}.newBuilder();
+                                        mergeJson(jsonString, builder, jsonParser);
+                                        inputBuilder{{setterName}}(builder.build());
+                                    {{/if}}
+                                    return inputBuilder;
+                                });
+                        })
+                        {{/with}}
+                        {{#parameters}}
+                        .map(inputBuilder -> {
+                            List<{{type}}> {{variable}} = param(serverRequest, "{{variable}}", p -> {{convert}});
+                            {{#if isRepeated}}
+                                inputBuilder{{setterName}}({{variable}});
+                            {{else}}
+                                if ({{variable}}.size() != 0) {
+                                    inputBuilder{{setterName}}({{variable}}.get(0));
+                                }
+                            {{/if}}
+                            return inputBuilder;
+                        })
+                        {{/parameters}}
+                        {{#paths}}
+                        .map(inputBuilder -> {
+                            {{type}} {{variable}} = query(serverRequest, "{{variable}}", p -> {{convert}});
+                            inputBuilder{{setterName}}({{variable}});
+                            return inputBuilder;
+                        })
+                        {{/paths}}
+                        .map({{requestType}}.Builder::build);
+            } catch (Exception e) {
+                return Mono.error(e);
+            }
+        }
+        {{/with}}
+        {{/methods}}
+
+        @javax.annotation.Nonnull
+        private <T> T query(ServerRequest serverRequest, String target, Convert<T> convert) {
+            try {
+              return convert.apply(serverRequest.pathVariable(target));
+            } catch (Exception e) {
+              throw new ServerWebInputException(e.getMessage());
+            }
+        }
+
+        @javax.annotation.Nonnull
+        private <T> List<T> param(ServerRequest serverRequest, String param, Convert<T> converter) {
+            List<String> params = serverRequest.queryParams().get(param);
+            if (params == null) {
+                return Collections.emptyList();
+            }
+            List<T> result = new ArrayList<>();
+            for (String p : params) {
+                if (!Strings.isNullOrEmpty(p)) {
+                    try {
+                        result.add(converter.apply(p));
+                    } catch (Exception e) {
+                        throw new ServerWebInputException(e.getMessage());
+                    }
+                }
+            }
+            return result;
+        }
+
+        private void mergeJson(String json, Message.Builder builder, JsonFormat.Parser jsonParser)  {
+          try {
+              jsonParser.merge(json, builder);
+          } catch (IOException e) {
+              throw new ServerWebInputException(e.getMessage());
+          }
+        }
+    }
+
+    private interface Convert<R> {
+        R apply(String target) throws Exception;
     }
 }
